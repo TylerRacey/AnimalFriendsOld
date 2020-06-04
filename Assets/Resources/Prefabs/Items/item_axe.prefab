@@ -12,7 +12,8 @@ GameObject:
   - component: {fileID: 245231407193894026}
   - component: {fileID: 8810622394895089786}
   - component: {fileID: 512900838086622446}
-  m_Layer: 8
+  - component: {fileID: 1059389195}
+  m_Layer: 13
   m_Name: item_axe
   m_TagString: Item
   m_Icon: {fileID: 0}
@@ -93,13 +94,18 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   itemName: axe
-  iconTexture: {fileID: 2800000, guid: 72a1fad0e1d317f468dcbfd7406962ce, type: 3}
-  cameraPositionOffset: {x: 0.634, y: -0.809, z: 0.627}
-  cameraEulerAnglesOffset: {x: 23.454, y: 100.736, z: 23.241}
-  animalEatingAnimation: 
-  viewmodelMesh: {fileID: -8176984191909879101, guid: fa7491db2e10de44d9759bdb5aa5caf6,
-    type: 3}
-  viewmodelMaterial: {fileID: -5026549948475233137, guid: fa7491db2e10de44d9759bdb5aa5caf6,
-    type: 3}
   triggerDistance: 4
   triggered: 0
+--- !u!65 &1059389195
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 512900838086622447}
+  m_Material: {fileID: 0}
+  m_IsTrigger: 1
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Size: {x: 0.8, y: 1.7, z: 0.2}
+  m_Center: {x: -0.10000024, y: 0.65000045, z: -0.05}

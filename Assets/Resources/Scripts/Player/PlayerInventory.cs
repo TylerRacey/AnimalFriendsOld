@@ -22,6 +22,9 @@ public class PlayerInventory : MonoBehaviour
     private Transform viewmodel;
     private PlayerViewmodel viewmodelScript;
 
+    private const int crosshairsWidth = 2;
+    private const int crosshairsLength = 14;
+
     private const int slotCount = 5;
     private const int oddNumberOfSlots = (slotCount % 2);
     private const int slotBorderThickness = 5;
@@ -38,11 +41,13 @@ public class PlayerInventory : MonoBehaviour
 
     Texture2D inventoryTexture;
 
+    private static Texture2D crosshairsTexture;
     private static Texture2D slotBackgroundTexture;
     private static Texture2D slotBorderTexture;
     private static Texture2D totalBorderTexture;
     private static Texture2D slotSelectedBorderTexture;
 
+    private static float pickupItemDistance = 2.25f;
 
     // Start is called before the first frame update
     void Start()
@@ -54,6 +59,10 @@ public class PlayerInventory : MonoBehaviour
         mainCamera = playerEye.Find("MainCamera");
         viewmodel = mainCamera.Find("Viewmodel");
         viewmodelScript = viewmodel.GetComponent<PlayerViewmodel>();
+
+        crosshairsTexture = new Texture2D(1, 1);
+        crosshairsTexture.SetPixel(0, 0, new Color(0.85f, 0.85f, 0.85f, 0.75f));
+        crosshairsTexture.Apply();
 
         slotBackgroundTexture = new Texture2D(1, 1);
         slotBackgroundTexture.SetPixel(0, 0, new Color(0, 0, 0, 0.5f));
@@ -100,7 +109,7 @@ public class PlayerInventory : MonoBehaviour
     {
         UpdateSelectedSlotIndex();
 
-        UpdatePlayerTriggerItem();
+        UpdatePlayerItemPickup();
     }
 
     private void UpdateSelectedSlotIndex()
@@ -119,6 +128,7 @@ public class PlayerInventory : MonoBehaviour
 
     void OnGUI()
     {
+        OnGUICrosshairs();
         OnGUIToolbar();
 
         //GameObject[] allItems = Utility.GetAllItems();
@@ -145,6 +155,15 @@ public class PlayerInventory : MonoBehaviour
 
         //    Handles.Label(item.transform.position, dot.ToString() + "Degrees");
         //}
+    }
+
+    void OnGUICrosshairs()
+    {
+        float centerScreenX = (Screen.width * 0.5f);
+        float centerScreenY = (Screen.height * 0.5f);
+
+        GUI.DrawTexture(new Rect(centerScreenX - crosshairsLength * 0.5f, centerScreenY - crosshairsWidth * 0.5f, crosshairsLength, crosshairsWidth), crosshairsTexture);
+        GUI.DrawTexture(new Rect(centerScreenX - crosshairsWidth * 0.5f, centerScreenY - crosshairsLength * 0.5f, crosshairsWidth, crosshairsLength), crosshairsTexture);
     }
 
     void OnGUIToolbar()
@@ -196,51 +215,16 @@ public class PlayerInventory : MonoBehaviour
         GUI.DrawTexture(new Rect(x + width - thickness, y + thickness, thickness, height - (thickness * 2)), texture);
     }
 
-    void UpdatePlayerTriggerItem()
+    void UpdatePlayerItemPickup()
     {
         if (!playerInput.UsePressed())
             return;
 
-        GameObject[] allItems = Utility.GetAllItems();
-
-        List<GameObject> viableItems = new List<GameObject>();
-
-        foreach (GameObject item in allItems)
+        RaycastHit hit;
+        if (Physics.Raycast(playerEye.position, playerEye.forward, out hit, pickupItemDistance, LayerMask.GetMask("Item")))
         {
+            GameObject item = hit.collider.gameObject;
             Item itemScript = item.GetComponent<Item>();
-
-            if (itemScript.triggered)
-                continue;
-
-            bool playerWithinDistance = (Vector3.Distance(playerEye.transform.position, item.transform.position) <= itemScript.triggerDistance);
-            if (!playerWithinDistance)
-                continue;
-
-            viableItems.Add(item);
-        }
-
-        float highestDot = float.MinValue;
-        GameObject closestItem = null;
-        foreach (GameObject item in viableItems)
-        {
-            Vector3 playerToItem = Vector3.Normalize((item.transform.position - playerEye.position));
-            Vector3 playerForward = playerEye.transform.forward;
-            float dot = Vector3.Dot(playerToItem, Vector3.Normalize(playerForward));
-
-            bool playerLookingAtItem = (dot >= Math.COS_30);
-            if (!playerLookingAtItem)
-                continue;
-
-            if (dot > highestDot)
-            {
-                closestItem = item;
-                highestDot = dot;
-            }
-        }
-
-        if (closestItem != null)
-        {
-            Item itemScript = closestItem.GetComponent<Item>();
             itemScript.triggered = true;
         }
     }

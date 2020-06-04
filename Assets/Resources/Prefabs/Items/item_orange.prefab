@@ -12,7 +12,8 @@ GameObject:
   - component: {fileID: 3033474653127247672}
   - component: {fileID: 5997585063407021000}
   - component: {fileID: 3341703006317287258}
-  m_Layer: 0
+  - component: {fileID: 866672236}
+  m_Layer: 13
   m_Name: item_orange
   m_TagString: Item
   m_Icon: {fileID: 0}
@@ -93,13 +94,18 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   itemName: orange
-  iconTexture: {fileID: 2800000, guid: 8d69443fea6283a43a42f87cc6ff9b3f, type: 3}
-  cameraPositionOffset: {x: 0.389, y: -0.639, z: 0.9203406}
-  cameraEulerAnglesOffset: {x: 0, y: 5, z: -10}
-  animalEatingAnimation: eating_apple
-  viewmodelMesh: {fileID: -4542256552269943631, guid: 75d23542a2f73ad4098381750fdda440,
-    type: 3}
-  viewmodelMaterial: {fileID: 4156002973242278026, guid: 75d23542a2f73ad4098381750fdda440,
-    type: 3}
   triggerDistance: 4
   triggered: 0
+--- !u!65 &866672236
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3341703006317287261}
+  m_Material: {fileID: 0}
+  m_IsTrigger: 1
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Size: {x: 0.75, y: 1, z: 0.75}
+  m_Center: {x: 0.05000048, y: 0.4, z: -0.049999528}

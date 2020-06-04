@@ -66,6 +66,9 @@ public class PlayerMovement : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        Physics.IgnoreLayerCollision(LayerMask.NameToLayer("Player"), LayerMask.NameToLayer("DestructibleVoxel"));
+        Physics.IgnoreLayerCollision(LayerMask.NameToLayer("Player"), LayerMask.NameToLayer("SeperatedVoxel"));
+
         PlayerStanceSetStand();
     }
 
@@ -88,17 +91,17 @@ public class PlayerMovement : MonoBehaviour
             PlayerStanceSetStand();
         }
 
-        if (playerInput.PronePressed())
-        {
-            if (PlayerProne())
-            {
-                PlayerStanceSetStand();
-            }
-            else
-            {
-                PlayerStanceSetProne();
-            }
-        }
+        //if (playerInput.PronePressed())
+        //{
+        //    if (PlayerProne())
+        //    {
+        //        PlayerStanceSetStand();
+        //    }
+        //    else
+        //    {
+        //        PlayerStanceSetProne();
+        //    }
+        //}
 
         if (playerInput.CrouchPressed() && !playerInput.SprintPressed())
         {
@@ -319,7 +322,7 @@ public class PlayerMovement : MonoBehaviour
         ApplyGravity();
 
         characterController.Move(worldMoveVector);
-
+  
         previousLocalMoveVector = localMoveVector;
     }
 

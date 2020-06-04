@@ -17,6 +17,9 @@ public class PlayerViewmodel : MonoBehaviour
     private Animator animator;
     private bool swinging;
 
+    private const float axeSwingTrunkDistance = 2.0f;
+    private const float axeSwingDamageRadius = 0.25f;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -37,7 +40,7 @@ public class PlayerViewmodel : MonoBehaviour
 
         UpdateSwinging();
 
-        previousSelectedInventoryItem = playerInventory.toolbarItemSlots[playerInventory.selectedSlotIndex].inventoryItem; ;
+        previousSelectedInventoryItem = playerInventory.toolbarItemSlots[playerInventory.selectedSlotIndex].inventoryItem;
     }
 
     private void UpdateCurrentViewmodel()
@@ -98,12 +101,19 @@ public class PlayerViewmodel : MonoBehaviour
         swinging = false;
     }
 
-
     public void AxeSwingImpact()
     {
-        //GameObject[] destructibleTrees = Utility.GetAllDestructibleTrees();
-        //destructibleTrees = Utility.SortByDistance(destructibleTrees, player.transform.position);
-        //destructibleTrees[0].GetComponent<DestructibleTree>().TakeDamage(playerEye.position);
+        Collider[] hitColliders = Physics.OverlapCapsule(playerEye.position, playerEye.position + playerEye.transform.forward * 2.0f, 0.5f, LayerMask.GetMask("SeperatedVoxel"));
+        for (int index = 0; index < hitColliders.Length; index++)
+        {
+            hitColliders[index].gameObject.GetComponent<Rigidbody>().AddForce(Utility.FlattenVector(playerEye.transform.forward) * 300.0f);
+        }
+
+        RaycastHit hit;
+        if (Physics.Raycast(playerEye.position, playerEye.forward, out hit, axeSwingTrunkDistance, LayerMask.GetMask("Destructible")))
+        {
+            hit.collider.gameObject.GetComponent<Destructible>().TakeDamage(hit.point, axeSwingDamageRadius);
+        }
     }
 }
 
