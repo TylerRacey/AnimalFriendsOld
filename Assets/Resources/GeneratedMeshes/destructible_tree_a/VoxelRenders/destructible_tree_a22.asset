@@ -20,6 +20,7 @@ MonoBehaviour:
   color: {r: 0.6313726, g: 0.35686275, b: 0, a: 1}
   drawFaces: 010000000000
   adjacentVoxelRenderIndexes: 000000001700000015000000180000002f00000043020000
+  adjacentVoxelRenders: []
   isSeperated: 0
   isAnchor: 0
   isExposed: 1

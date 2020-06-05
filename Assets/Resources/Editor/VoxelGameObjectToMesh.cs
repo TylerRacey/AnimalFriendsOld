@@ -129,7 +129,7 @@ public class VoxelGameObjectToDestructiblePrefab : EditorWindow
             // Create Voxel Render
             Color voxelColor = voxel.GetComponent<MeshRenderer>().sharedMaterial.color;
             Vector2 voxelMeshUVs = new Vector2(voxelColors.IndexOf(voxelColor) / 4.0f, 0);
-            VoxelRender voxelRender = VoxelRender.CreateInstance(voxel.transform.localPosition, voxel.transform.forward, voxel.transform.right, voxel.transform.up, voxel.transform.localRotation, voxelColor, drawFaces, null, false, isAnchor, isExposed, false, null, voxelMeshUVs);
+            VoxelRender voxelRender = VoxelRender.CreateInstance(voxel.transform.localPosition, voxel.transform.forward, voxel.transform.right, voxel.transform.up, voxel.transform.localRotation, voxelColor, drawFaces, null, null, false, isAnchor, isExposed, false, null, voxelMeshUVs);
 
             // Create Temp GameObject Voxel
             GameObject generatedVoxel = Utility.GenerateVoxelGameObjectFromVoxelRender(voxelRender, true, selectedGameObject.transform);

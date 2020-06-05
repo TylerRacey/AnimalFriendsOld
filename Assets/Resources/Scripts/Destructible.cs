@@ -25,9 +25,10 @@ public class Destructible : MonoBehaviour
 
         destructibleCenterFlattened = new Vector3(transform.position.x, 0, transform.position.z);
 
-        foreach (VoxelRender voxelRenderImport in voxelRenderImports)
+        // Copy Voxel Render Imports And Setup Lists
+        for(int index = 0; index < voxelRenderImports.Count; index++)
         {
-            VoxelRender voxelRender = Instantiate(voxelRenderImport);
+            VoxelRender voxelRender = Instantiate(voxelRenderImports[index]);
             
             if (voxelRender.isExposed)
             {
@@ -44,29 +45,46 @@ public class Destructible : MonoBehaviour
             voxelRenders.Add(voxelRender);
         }
 
+        // Assign Adjacent Voxel Renders Directly
+        for (int index = 0; index < voxelRenders.Count; index++)
+        {
+            VoxelRender voxelRender = voxelRenders[index];
+            voxelRender.adjacentVoxelRenders = new VoxelRender[(int)Common.VoxelFaces.SIZE];
+            for (int faceIndex = 0; faceIndex < (int)Common.VoxelFaces.SIZE; faceIndex++)
+            {
+                VoxelRender adjacentVoxelRender = voxelRenders[voxelRender.adjacentVoxelRenderIndexes[faceIndex]];
+                if (adjacentVoxelRender.Equals(null))
+                    continue;
+
+                if (adjacentVoxelRender.isSeperated)
+                    continue;
+
+                voxelRender.adjacentVoxelRenders[faceIndex] = adjacentVoxelRender;
+            }
+        }
+
         minDestructibleVoxelCount = (int)(anchorVoxelRenders.Count * 2.0f);
     }
 
     public void TakeDamage(Vector3 hitPosition, float damageRadius)
     {
-        foreach (VoxelRender exposedVoxelRender in exposedVoxelRenders)
+        for (int index = 0; index < exposedVoxelRenders.Count; index++)
         {
-            BoxCollider boxCollider = Utility.VoxelCreateBoxCollider(exposedVoxelRender.gameObject);
+            BoxCollider boxCollider = Utility.VoxelCreateBoxCollider(exposedVoxelRenders[index].gameObject);
             boxCollider.isTrigger = true;
         }
 
         Vector3 voxelHitPosition = FindHitVoxelContactPosition(hitPosition);
         if (voxelHitPosition == default(Vector3))
         {
-            foreach (VoxelRender exposedVoxelRender in exposedVoxelRenders)
+            for (int index = 0; index < exposedVoxelRenders.Count; index++)
             {
-                Destroy(exposedVoxelRender.gameObject.GetComponent<BoxCollider>());
+                Destroy(exposedVoxelRenders[index].gameObject.GetComponent<BoxCollider>());
             }
             return;
         }
 
         Collider[] hitColliders = Physics.OverlapCapsule(playerEye.position, voxelHitPosition, damageRadius, LayerMask.GetMask("DestructibleVoxel"));
-
         List<VoxelRender> launchedVoxelRenders = new List<VoxelRender>();
         for (int index = 0; index < hitColliders.Length; index++)
         {
@@ -83,13 +101,13 @@ public class Destructible : MonoBehaviour
             launchedVoxelRenders.Add(hitVoxelRender);
         }
 
-        DrawAdjacentFacesFromLaunchedVoxelRenders(launchedVoxelRenders);
+        UpdateMeshFromLaunchedVoxelRenders(launchedVoxelRenders);
 
-        //UpdateFloatingVoxels();
+        UpdateFloatingVoxels();
 
-        foreach (VoxelRender exposedVoxelRender in exposedVoxelRenders)
+        for (int index = 0; index < exposedVoxelRenders.Count; index++)
         {
-            Destroy(exposedVoxelRender.gameObject.GetComponent<BoxCollider>());
+            Destroy(exposedVoxelRenders[index].gameObject.GetComponent<BoxCollider>());
         }
     }
 
@@ -121,6 +139,7 @@ public class Destructible : MonoBehaviour
 
     private void SeperateVoxelRender(VoxelRender voxelRender)
     {
+        voxelRenders.Remove(voxelRender);
         exposedVoxelRenders.Remove(voxelRender);
         anchorVoxelRenders.Remove(voxelRender);
 
@@ -131,13 +150,13 @@ public class Destructible : MonoBehaviour
         voxelRender.gameObject = Utility.ConvertVoxelRenderIntoSeperatedVoxelGameObject(voxelRender, transform.gameObject);
     }
 
-    private void DrawAdjacentFacesFromLaunchedVoxelRenders(List<VoxelRender> launchedVoxelRenders)
+    private void UpdateMeshFromLaunchedVoxelRenders(List<VoxelRender> launchedVoxelRenders)
     {
-        foreach (VoxelRender launchedVoxelRender in launchedVoxelRenders)
+        for (int index = 0; index < launchedVoxelRenders.Count; index++)
         {
             for (int removedFaceIndex = 0; removedFaceIndex < (int)Common.VoxelFaces.SIZE; removedFaceIndex++)
             {
-                VoxelRender adjacentVoxelRender = voxelRenders[launchedVoxelRender.adjacentVoxelRenderIndexes[removedFaceIndex]];
+                VoxelRender adjacentVoxelRender = launchedVoxelRenders[index].adjacentVoxelRenders[removedFaceIndex];
                 if (adjacentVoxelRender.Equals(null))
                     continue;
 
@@ -171,80 +190,76 @@ public class Destructible : MonoBehaviour
         newMeshFilter.sharedMesh.CombineMeshes(combineInstances, true, true, true);
     }
 
-    //private void UpdateFloatingVoxels()
-    //{
-    //    for (int index = 0; index < destructibleVoxels.Count; index++)
-    //    {
-    //        destructibleVoxels[index].GetComponent<VoxelData>().checkedForFloatingThisFrame = false;
-    //    }
+    private void UpdateFloatingVoxels()
+    {
+        for (int index = 0; index < voxelRenders.Count; index++)
+        {
+            voxelRenders[index].checkedForFloatingThisFrame = false;
+        }
 
-    //    for (int index = 0; index < anchorVoxels.Count; index++)
-    //    {
-    //        FloodFillVoxel(anchorVoxels[index]);
-    //    }
+        for (int index = 0; index < anchorVoxelRenders.Count; index++)
+        {
+            FloodFillVoxelRender(anchorVoxelRenders[index]);
+        }
 
-    //    List<GameObject> floatingVoxels = new List<GameObject>();
-    //    for (int index = 0; index < destructibleVoxels.Count; index++)
-    //    {
-    //        GameObject destructibleVoxel = destructibleVoxels[index];
-    //        if (destructibleVoxels[index].GetComponent<VoxelData>().checkedForFloatingThisFrame)
-    //            continue;
+        List<VoxelRender> floatingVoxelRenders = new List<VoxelRender>();
+        for (int index = 0; index < voxelRenders.Count; index++)
+        {
+            VoxelRender voxelRender = voxelRenders[index];
+            if (voxelRender.checkedForFloatingThisFrame)
+                continue;
 
-    //        floatingVoxels.Add(destructibleVoxel);
-    //    }
+            floatingVoxelRenders.Add(voxelRender);
+        }
 
-    //    LaunchFloatingVoxels(floatingVoxels);
-    //}
+        LaunchFloatingVoxelRenders(floatingVoxelRenders);
+    }
 
-    //private void FloodFillVoxel(GameObject mainVoxel)
-    //{
-    //    VoxelData mainVoxelData = mainVoxel.GetComponent<VoxelData>();
+    private void FloodFillVoxelRender(VoxelRender mainVoxelRender)
+    {
+        if (mainVoxelRender.isSeperated)
+            return;
 
-    //    if (mainVoxelData.isSeperated)
-    //        return;
+        if (mainVoxelRender.checkedForFloatingThisFrame)
+            return;
 
-    //    if (mainVoxelData.checkedForFloatingThisFrame)
-    //        return;
+        mainVoxelRender.checkedForFloatingThisFrame = true;
 
-    //    mainVoxelData.checkedForFloatingThisFrame = true;
+        for (int directionIndex = 0; directionIndex < (int)Common.VoxelFaces.SIZE; directionIndex++)
+        {
+            VoxelRender adjacentVoxelRender = mainVoxelRender.adjacentVoxelRenders[directionIndex];
+            if (adjacentVoxelRender.Equals(null))
+                continue;
 
-    //    for (int directionIndex = 0; directionIndex < (int)Common.VoxelFaces.SIZE; directionIndex++)
-    //    {
-    //        GameObject adjacentVoxel = mainVoxelData.adjacentVoxels[directionIndex];
+            if (adjacentVoxelRender.isSeperated)
+                continue;
 
-    //        if (adjacentVoxel == null)
-    //            continue;
+            if (adjacentVoxelRender.checkedForFloatingThisFrame)
+                continue;
 
-    //        VoxelData adjacentVoxelData = adjacentVoxel.GetComponent<VoxelData>();
+            FloodFillVoxelRender(adjacentVoxelRender);
+        }
+    }
 
-    //        if (adjacentVoxelData.isSeperated)
-    //            continue;
+    private void LaunchFloatingVoxelRenders(List<VoxelRender> floatingVoxelRenders)
+    {
+        for (int index = 0; index < floatingVoxelRenders.Count; index++)
+        {
+            VoxelRender floatingVoxelRender = floatingVoxelRenders[index];
+            if (!floatingVoxelRender.isSeperated)
+            {
+                SeperateVoxelRender(floatingVoxelRender);
+                Utility.VoxelCreateBoxCollider(floatingVoxelRender.gameObject);
+            }
 
-    //        if (adjacentVoxelData.checkedForFloatingThisFrame)
-    //            continue;
+            Rigidbody rigidbody = floatingVoxelRender.gameObject.GetComponent<Rigidbody>();
+            rigidbody.velocity = player.transform.forward * 2.0f;
+        }
 
-    //        FloodFillVoxel(adjacentVoxel);
-    //    }
-    //}
+        if (voxelRenders.Count == 0)
+            Destroy(gameObject);
 
-    //private void LaunchFloatingVoxels(List<GameObject> floatingVoxels)
-    //{
-    //    for (int index = 0; index < floatingVoxels.Count; index++)
-    //    {
-    //        GameObject floatingVoxel = floatingVoxels[index];
-    //        if (!floatingVoxel.GetComponent<VoxelData>().isSeperated)
-    //        {
-    //            Utility.VoxelCreateBoxCollider(floatingVoxel);
-    //            SeperateVoxel(floatingVoxel);
-    //        }
-
-    //        Rigidbody rigidbody = floatingVoxel.GetComponent<Rigidbody>();
-    //        rigidbody.velocity = player.transform.forward * 2.0f;
-    //    }
-
-    //    if (destructibleVoxels.Count == 0)
-    //        Destroy(gameObject);
-
-    //    Utility.ScaleBoxColliderBoundsToVoxels(GetComponent<BoxCollider>(), destructibleVoxels);
-    //}
+        Utility.ScaleBoxColliderBoundsToVoxelRenders(GetComponent<BoxCollider>(), exposedVoxelRenders);
+        UpdateMeshFromLaunchedVoxelRenders(floatingVoxelRenders);
+    }
 }

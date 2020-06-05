@@ -11,6 +11,7 @@ public class VoxelRender : ScriptableObject
     public Color color;
     public bool[] drawFaces;
     public int[] adjacentVoxelRenderIndexes;
+    public VoxelRender[] adjacentVoxelRenders;
     public bool isSeperated;
     public bool isAnchor;
     public bool isExposed;
@@ -18,7 +19,7 @@ public class VoxelRender : ScriptableObject
     public GameObject gameObject;
     public Vector2 meshUVs;
 
-    public void Init(Vector3 _localPosition, Vector3 _forward, Vector3 _right, Vector3 _up, Quaternion _localRotation, Color _color, bool[] _drawFaces, int[] _adjacentVoxelRenderIndexes, bool _isSeperated, bool _isAnchor, bool _isExposed, bool _checkedForFloatingThisFrame, GameObject _gameObject, Vector2 _meshUVs)
+    public void Init(Vector3 _localPosition, Vector3 _forward, Vector3 _right, Vector3 _up, Quaternion _localRotation, Color _color, bool[] _drawFaces, int[] _adjacentVoxelRenderIndexes, VoxelRender[] _adjacentVoxelRenders, bool _isSeperated, bool _isAnchor, bool _isExposed, bool _checkedForFloatingThisFrame, GameObject _gameObject, Vector2 _meshUVs)
     {
         localPosition = _localPosition;
         forward = _forward;
@@ -28,6 +29,7 @@ public class VoxelRender : ScriptableObject
         color = _color;
         drawFaces = _drawFaces;
         adjacentVoxelRenderIndexes = _adjacentVoxelRenderIndexes;
+        adjacentVoxelRenders = _adjacentVoxelRenders;
         isSeperated = _isSeperated;
         isAnchor = _isAnchor;
         isExposed = _isExposed;
@@ -36,10 +38,10 @@ public class VoxelRender : ScriptableObject
         meshUVs = _meshUVs;
     }
 
-    public static VoxelRender CreateInstance(Vector3 _localPosition, Vector3 _forward, Vector3 _right, Vector3 _up, Quaternion _localRotation, Color _color, bool[] _drawFaces, int[] _adjacentVoxelRenderIndexes, bool _isSeperated, bool _isAnchor, bool _isExposed, bool _checkedForFloatingThisFrame, GameObject _gameObject, Vector2 _meshUVs)
+    public static VoxelRender CreateInstance(Vector3 _localPosition, Vector3 _forward, Vector3 _right, Vector3 _up, Quaternion _localRotation, Color _color, bool[] _drawFaces, int[] _adjacentVoxelRenderIndexes, VoxelRender[] _adjacentVoxelRenders, bool _isSeperated, bool _isAnchor, bool _isExposed, bool _checkedForFloatingThisFrame, GameObject _gameObject, Vector2 _meshUVs)
     {
         VoxelRender voxelRender = CreateInstance<VoxelRender>();
-        voxelRender.Init(_localPosition, _forward, _right, _up, _localRotation, _color, _drawFaces, _adjacentVoxelRenderIndexes, _isSeperated, _isAnchor, _isExposed, _checkedForFloatingThisFrame, _gameObject, _meshUVs);
+        voxelRender.Init(_localPosition, _forward, _right, _up, _localRotation, _color, _drawFaces, _adjacentVoxelRenderIndexes, _adjacentVoxelRenders, _isSeperated, _isAnchor, _isExposed, _checkedForFloatingThisFrame, _gameObject, _meshUVs);
         return voxelRender;
     }
 }

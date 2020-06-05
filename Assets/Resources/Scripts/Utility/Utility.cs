@@ -174,13 +174,13 @@ public static class Utility
         return new int[] { (int)Common.VoxelFaces.BACK, (int)Common.VoxelFaces.LEFT, (int)Common.VoxelFaces.BOTTOM, (int)Common.VoxelFaces.RIGHT, (int)Common.VoxelFaces.TOP, (int)Common.VoxelFaces.FRONT };
     }  
 
-    public static void ScaleBoxColliderBoundsToVoxels(BoxCollider boxCollider, List<GameObject> voxels)
+    public static void ScaleBoxColliderBoundsToVoxelRenders(BoxCollider boxCollider, List<VoxelRender> voxelRenders)
     {
         // Build Parent Box Collider From Voxel Colliders
         Bounds newBounds = new Bounds(Vector3.zero, Vector3.zero);
-        for (int voxelIndex = 0; voxelIndex < voxels.Count; voxelIndex++)
+        for (int voxelIndex = 0; voxelIndex < voxelRenders.Count; voxelIndex++)
         {
-            GameObject voxel = voxels[voxelIndex];
+            GameObject voxel = voxelRenders[voxelIndex].gameObject;
 
             Vector3 voxelCenter = voxel.transform.localPosition + voxel.transform.up * Common.VOXEL_SIZE * 0.5f + voxel.transform.right * Common.VOXEL_SIZE * 0.5f + voxel.transform.forward * Common.VOXEL_SIZE * 0.5f;
 
