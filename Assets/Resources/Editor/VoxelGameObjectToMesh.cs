@@ -1,14 +1,12 @@
 ﻿using UnityEngine;
 using UnityEditor;
-using System.Collections;
 using System.Collections.Generic;
-using UnityEngine.UIElements;
-using GitHub.Unity;
+using System.IO;
 
 public class VoxelGameObjectToDestructiblePrefab : EditorWindow
 {
-    const string assetsFolderPath = "Assets/Generated Meshes";
     const string prefabsFolderPath = "Assets/Resources/Prefabs/Destructible";
+    const string assetsFolderPath = "Assets/Resources/GeneratedMeshes";
 
     string meshName = "Default";
 
@@ -30,18 +28,19 @@ public class VoxelGameObjectToDestructiblePrefab : EditorWindow
             {
                 GameObject selected = selection[selectionIndex];
 
-                Selection.activeGameObject = TurnVoxelsIntoGameObject(selected, meshName);
+                GameObject newGameObject = TurnVoxelsIntoGameObject(selected, meshName);
 
-                //FileUtil.DeleteFileOrDirectory(prefabsFolderPath + "/" + meshName);
-                //GameObject prefab = PrefabUtility.SaveAsPrefabAsset(newGameObject, prefabsFolderPath + "/" + meshName + ".prefab");
+                FileUtil.DeleteFileOrDirectory(prefabsFolderPath + "/" + meshName + "/" + meshName + ".prefab");
+                AssetDatabase.CreateFolder(prefabsFolderPath, meshName);
+                GameObject prefab = PrefabUtility.SaveAsPrefabAsset(newGameObject, prefabsFolderPath + "/" + meshName + "/" + meshName + ".prefab");
 
-                //Selection.activeObject = (GameObject)PrefabUtility.InstantiatePrefab(prefab);
+                Selection.activeObject = (GameObject)PrefabUtility.InstantiatePrefab(prefab);
 
-                //DestroyImmediate(newGameObject);
-                //UnityEditor.AssetDatabase.Refresh();
-                //EditorApplication.RepaintHierarchyWindow();
+                DestroyImmediate(newGameObject);
+                AssetDatabase.Refresh();
+                EditorApplication.RepaintHierarchyWindow();
 
-                //AssetDatabase.SaveAssets();
+                AssetDatabase.SaveAssets();
             }
         }
 
@@ -57,12 +56,6 @@ public class VoxelGameObjectToDestructiblePrefab : EditorWindow
         newGameObject.transform.localScale = selectedGameObject.transform.localScale;
         newGameObject.layer = LayerMask.NameToLayer("Destructible");
         Destructible destructible = newGameObject.AddComponent<Destructible>();
-
-        //FileUtil.DeleteFileOrDirectory(assetsFolderPath + "/" + meshName);
-        //UnityEditor.AssetDatabase.Refresh();
-        //AssetDatabase.CreateFolder(assetsFolderPath, meshName);
-        //AssetDatabase.CreateFolder(assetsFolderPath + "/" + meshName, "Meshes");
-        //AssetDatabase.CreateFolder(assetsFolderPath + "/" + meshName, "Materials");
 
         Transform[] allChildren = selectedGameObject.GetComponentsInChildren<Transform>();
         List<GameObject> voxels = new List<GameObject>();
@@ -84,7 +77,11 @@ public class VoxelGameObjectToDestructiblePrefab : EditorWindow
             voxels.Add(voxel);
         }
 
+        List<Color> voxelColors = new List<Color>();
+
         List<GameObject> generatedVoxels = new List<GameObject>();
+        List<GameObject> exposedVoxels = new List<GameObject>();
+        List<GameObject> anchorVoxels = new List<GameObject>();
         foreach (GameObject voxel in voxels)
         {
             BoxCollider boxCollider = voxel.GetComponent<BoxCollider>();
@@ -117,16 +114,35 @@ public class VoxelGameObjectToDestructiblePrefab : EditorWindow
                 }
             }
 
-            Material voxelMaterial = new Material(voxel.GetComponent<MeshRenderer>().sharedMaterial);
-            VoxelStruct voxelStruct = new VoxelStruct(voxel.transform.position, voxel.transform.forward, voxel.transform.right, voxel.transform.up, voxel.transform.rotation, voxelMaterial, drawFaces);
+            Color voxelColor = voxel.GetComponent<MeshRenderer>().material.color;
+            if (!voxelColors.Contains(voxelColor))
+            {
+                voxelColors.Add(voxelColor);
+            }
 
-            GameObject generatedVoxel = GenerateVoxelFromVoxelStruct(voxelStruct, meshName);
+            VoxelStruct voxelStruct = new VoxelStruct(voxel.transform.position, voxel.transform.forward, voxel.transform.right, voxel.transform.up, voxel.transform.rotation, voxelColor, drawFaces);
+
+            GameObject generatedVoxel = GenerateVoxelFromVoxelStruct(voxelStruct, voxelColor, voxelColors);
+
+            if(!voxelColors.Contains(voxelColor))
+            {
+                voxelColors.Add(voxelColor);
+            }
 
             VoxelData voxelData = generatedVoxel.AddComponent<VoxelData>();
             voxelData.drawFaces = drawFaces;
-            voxelData.material = voxelMaterial;
-            voxelData.isAnchor = isAnchor;
-            voxelData.isExposed = isExposed;
+
+            if (isExposed)
+            {
+                exposedVoxels.Add(generatedVoxel);
+                voxelData.isExposed = true;
+            }
+
+            if (isAnchor)
+            {
+                anchorVoxels.Add(generatedVoxel);
+                voxelData.isAnchor = true;
+            }
 
             generatedVoxel.transform.SetParent(newGameObject.transform, true);
             generatedVoxels.Add(generatedVoxel);
@@ -191,32 +207,71 @@ public class VoxelGameObjectToDestructiblePrefab : EditorWindow
             DestroyImmediate(generatedVoxels[voxelIndex].GetComponent<BoxCollider>());
         }
 
-        foreach (GameObject generatedVoxel in generatedVoxels)
+        // Combine All Meshes Into Parent Mesh
+        CombineInstance[] combineInstances = new CombineInstance[exposedVoxels.Count];
+        
+        for (int voxelIndex = 0; voxelIndex < exposedVoxels.Count; voxelIndex++)
         {
-            VoxelData voxelData = generatedVoxel.GetComponent<VoxelData>();
-            if (voxelData.isAnchor)
-            {
-                destructible.anchorVoxels.Add(generatedVoxel);
-            }
+            GameObject exposedVoxel = exposedVoxels[voxelIndex];
+            MeshFilter meshFilter = exposedVoxel.GetComponent<MeshFilter>();
 
-            if (voxelData.isExposed)
-            {
-                destructible.exposedVoxels.Add(generatedVoxel);
-            }
+            combineInstances[voxelIndex].mesh = meshFilter.sharedMesh;
+            combineInstances[voxelIndex].transform =  Matrix4x4.TRS(exposedVoxel.transform.localPosition, exposedVoxel.transform.localRotation, Vector3.one);
+            DestroyImmediate(meshFilter);
         }
+
+        MeshFilter newMeshFilter = newGameObject.AddComponent<MeshFilter>();
+        newMeshFilter.mesh = new Mesh();
+        newMeshFilter.sharedMesh.CombineMeshes(combineInstances, true, true, true);
+
+        // Make Material Out of Voxel Colors
+        MeshRenderer meshRenderer = newGameObject.AddComponent<MeshRenderer>();
+        Texture2D texture = new Texture2D(voxelColors.Count, 1);
+        for (int colorIndex = 0; colorIndex < voxelColors.Count; colorIndex++)
+        {
+            texture.SetPixel(colorIndex, 0, voxelColors[colorIndex]);
+            texture.Apply();
+        }
+
         destructible.destructibleVoxels = generatedVoxels;
+        destructible.exposedVoxels = exposedVoxels;
+        destructible.anchorVoxels = anchorVoxels;
+
+        FileUtil.DeleteFileOrDirectory(assetsFolderPath + "/" + meshName);
+        AssetDatabase.CreateFolder(assetsFolderPath, meshName);
+        AssetDatabase.CreateFolder(assetsFolderPath + "/" + meshName, "Textures");
+        AssetDatabase.CreateFolder(assetsFolderPath + "/" + meshName, "Meshes");
+        AssetDatabase.CreateFolder(assetsFolderPath + "/" + meshName, "Materials");
+
+        string assetFolderPath = assetsFolderPath + "/" + meshName + "/";
+        byte[] textureBytes = texture.EncodeToPNG();
+        FileUtil.DeleteFileOrDirectory(Application.dataPath + "/Resources/GeneratedMeshes/" + meshName + "/Textures/" + meshName + ".png");
+        File.WriteAllBytes(Application.dataPath + "/Resources/GeneratedMeshes/" + meshName + "/Textures/" + meshName + ".png", textureBytes);
+
+        AssetDatabase.SaveAssets();
+        AssetDatabase.Refresh();
+
+        texture = Resources.Load("GeneratedMeshes/" + meshName + "/Textures/" + meshName) as Texture2D;
+
+        Material material = new Material(Shader.Find("Standard"));
+        material.mainTexture = texture;
+        material.SetFloat("_Glossiness", 0.0f);
+        meshRenderer.sharedMaterial = material;
+        Repaint();
+
+        AssetDatabase.CreateAsset(material, AssetDatabase.GenerateUniqueAssetPath(assetFolderPath + "Materials/" + meshName + ".mat"));
+        AssetDatabase.CreateAsset(newMeshFilter.sharedMesh, AssetDatabase.GenerateUniqueAssetPath(assetFolderPath + "Meshes/" + meshName + ".asset"));
 
         return newGameObject;
     }
 
-    private GameObject GenerateVoxelFromVoxelStruct(VoxelStruct voxelStruct, string meshName)
+    private GameObject GenerateVoxelFromVoxelStruct(VoxelStruct voxelStruct, Color voxelColor, List<Color> voxelColors)
     {
         GameObject voxel = new GameObject("DestructibleVoxel");
         voxel.transform.position = voxelStruct.position;
         voxel.transform.rotation = voxelStruct.rotation;
         voxel.layer = LayerMask.NameToLayer("DestructibleVoxel");
 
-        Material material = voxelStruct.material;
         bool[] drawFaces = voxelStruct.drawFaces;
 
         bool willRenderVoxel = false;
@@ -367,9 +422,6 @@ public class VoxelGameObjectToDestructiblePrefab : EditorWindow
             normals.Add(Vector3.forward);
         }
 
-        MeshRenderer meshRenderer = voxel.AddComponent<MeshRenderer>();
-        meshRenderer.material = material;
-
         MeshFilter meshFilter = voxel.AddComponent<MeshFilter>();
 
         Mesh mesh = new Mesh();
@@ -377,11 +429,16 @@ public class VoxelGameObjectToDestructiblePrefab : EditorWindow
         mesh.triangles = triangles.ToArray();
         mesh.normals = normals.ToArray();
 
-        meshFilter.mesh = mesh;
+        float u = voxelColors.IndexOf(voxelColor) / 4.0f;
+        Vector2[] uvs = new Vector2[vertices.Count];
+        for (int index = 0; index < uvs.Length; index++)
+        {
+            uvs[index] = new Vector2(u, 0);
+        }
 
-        //string assetFolderPath = assetsFolderPath + "/" + meshName + "/";
-        //AssetDatabase.CreateAsset(material, AssetDatabase.GenerateUniqueAssetPath(assetFolderPath + "Materials/" + meshName + ".mat"));
-        //AssetDatabase.CreateAsset(mesh, AssetDatabase.GenerateUniqueAssetPath(assetFolderPath + "Meshes/" + meshName + ".asset"));
+        mesh.uv = uvs;
+
+        meshFilter.mesh = mesh;
 
         return voxel;
     }
@@ -393,17 +450,17 @@ public class VoxelGameObjectToDestructiblePrefab : EditorWindow
         public Vector3 right;
         public Vector3 up;
         public Quaternion rotation;
-        public Material material;
+        public Color color;
         public bool[] drawFaces;
 
-        public VoxelStruct(Vector3 _position, Vector3 _forward, Vector3 _right, Vector3 _up, Quaternion _rotation, Material _material, bool[] _drawFaces)
+        public VoxelStruct(Vector3 _position, Vector3 _forward, Vector3 _right, Vector3 _up, Quaternion _rotation, Color _color, bool[] _drawFaces)
         {
             position = _position;
             forward = _forward;
             right = _right;
             up = _up;
             rotation = _rotation;
-            material = _material;
+            color = _color;
             drawFaces = _drawFaces;
         }
     }

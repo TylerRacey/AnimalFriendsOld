@@ -139,7 +139,7 @@ public class Destructible : MonoBehaviour
                 {
                     meshRenderer = adjacentVoxel.AddComponent<MeshRenderer>();
                 }
-                meshRenderer.material = adjacentVoxelData.material;
+                // meshRenderer.material = adjacentVoxelData.material;
 
                 Utility.UpdateGameObjectVoxelFaces(adjacentVoxel, adjacentVoxelData.drawFaces);
 
