@@ -2,5 +2,5 @@
 
 public class VoxelData : MonoBehaviour
 {
-    public VoxelRender voxelRender;
+    public VoxelStruct voxelStruct;
 }

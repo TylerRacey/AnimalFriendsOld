@@ -8,7 +8,7 @@ public class PlayerLook : MonoBehaviour
     private PlayerMovement playerMovement;
     private Animator playerAnimator;
     private PlayerInput playerInput;
-    private Camera camera;
+    private Camera cameraComponent;
 
     [SerializeField]
     private Transform player, playerEye, mainCamera;
@@ -39,7 +39,7 @@ public class PlayerLook : MonoBehaviour
         playerMovement = GetComponent<PlayerMovement>();
         playerAnimator = mainCamera.GetComponent<Animator>();
         playerInput = GetComponent<PlayerInput>();
-        camera = mainCamera.GetComponent<Camera>();
+        cameraComponent = mainCamera.GetComponent<Camera>();
     }
 
     // Start is called before the first frame update
@@ -103,13 +103,13 @@ public class PlayerLook : MonoBehaviour
     {
         if(playerInput.ZoomPressed())
         {
-            camera.fieldOfView = Mathf.Lerp(camera.fieldOfView, cameraZoomedFoV, cameraZoomInRate * Time.deltaTime);
-            camera.cullingMask |= 1 << LayerMask.NameToLayer("UnderWorld");
+            cameraComponent.fieldOfView = Mathf.Lerp(cameraComponent.fieldOfView, cameraZoomedFoV, cameraZoomInRate * Time.deltaTime);
+            cameraComponent.cullingMask |= 1 << LayerMask.NameToLayer("UnderWorld");
         }
         else
         {
-            camera.fieldOfView = Mathf.Lerp(camera.fieldOfView, cameraDefaultFoV, cameraZoomOutRate * Time.deltaTime);
-            camera.cullingMask &= ~(1 << LayerMask.NameToLayer("UnderWorld"));
+            cameraComponent.fieldOfView = Mathf.Lerp(cameraComponent.fieldOfView, cameraDefaultFoV, cameraZoomOutRate * Time.deltaTime);
+            cameraComponent.cullingMask &= ~(1 << LayerMask.NameToLayer("UnderWorld"));
         }
     }
 

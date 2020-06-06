@@ -1,0 +1,27 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 83e0b0593ab68d84a8f9b5ca2b8c8020, type: 3}
+  m_Name: destructible_tree_a47
+  m_EditorClassIdentifier: 
+  localPosition: {x: 0.11100006, y: 2.1000001, z: -0.205}
+  forward: {x: 0, y: 0, z: 1}
+  right: {x: 1, y: 0, z: 0}
+  up: {x: 0, y: 1, z: 0}
+  color: {r: 0.6313726, g: 0.35686275, b: 0, a: 1}
+  drawFaces: 010000000000
+  adjacentVoxelExportIndexes: ffffffff2e000000160000002d000000300000004e020000
+  isSeperated: 0
+  isAnchor: 0
+  isExposed: 1
+  checkedForFloatingThisFrame: 0
+  gameObject: {fileID: 0}
+  meshUVs: {x: 0.5, y: 0}

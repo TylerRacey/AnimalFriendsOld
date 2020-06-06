@@ -103,12 +103,6 @@ public class PlayerViewmodel : MonoBehaviour
 
     public void AxeSwingImpact()
     {
-        Collider[] hitColliders = Physics.OverlapCapsule(playerEye.position, playerEye.position + playerEye.transform.forward * 2.0f, 0.5f, LayerMask.GetMask("SeperatedVoxel"));
-        for (int index = 0; index < hitColliders.Length; index++)
-        {
-            hitColliders[index].gameObject.GetComponent<Rigidbody>().AddForce(Utility.FlattenVector(playerEye.transform.forward) * 300.0f);
-        }
-
         RaycastHit hit;
         if (Physics.Raycast(playerEye.position, playerEye.forward, out hit, axeSwingTrunkDistance, LayerMask.GetMask("Destructible")))
         {

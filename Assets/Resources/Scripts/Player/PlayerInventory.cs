@@ -49,6 +49,8 @@ public class PlayerInventory : MonoBehaviour
 
     private static float pickupItemDistance = 2.25f;
 
+    private static float pickupSeperatedVoxelDistance = 2.75f;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -110,6 +112,8 @@ public class PlayerInventory : MonoBehaviour
         UpdateSelectedSlotIndex();
 
         UpdatePlayerItemPickup();
+
+        UpdatePlayerSeperatedVoxelPickup();
     }
 
     private void UpdateSelectedSlotIndex()
@@ -226,6 +230,21 @@ public class PlayerInventory : MonoBehaviour
             GameObject item = hit.collider.gameObject;
             Item itemScript = item.GetComponent<Item>();
             itemScript.triggered = true;
+        }
+    }
+
+    void UpdatePlayerSeperatedVoxelPickup()
+    {
+        Collider[] hitColliders = Physics.OverlapSphere(playerEye.position, pickupSeperatedVoxelDistance, LayerMask.GetMask("SeperatedVoxel"));
+        for (int index = 0; index < hitColliders.Length; index++)
+        {
+            GameObject seperatedVoxel = hitColliders[index].gameObject;
+            SeperatedVoxel seperatedVoxelScript = seperatedVoxel.GetComponent<SeperatedVoxel>();
+
+            if (!seperatedVoxelScript.canBeTriggered)
+                continue;
+
+            seperatedVoxelScript.StartCoroutine(seperatedVoxelScript.TriggeredMovementToInventory());
         }
     }
 
