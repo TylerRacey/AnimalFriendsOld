@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: destructible_bush_a154
   m_EditorClassIdentifier: 
   localPosition: {x: 0, y: 0.5, z: -0.05000007}
-  color: {r: 0, g: 1, b: 0.092865944, a: 1}
+  color: {r: 0.43529412, g: 0.2509804, b: 0, a: 1}
   drawFaces: 000000000000
   adjacentVoxelExportIndexes: 99000000c1000000a10000006c000000920000009b000000
   isSeperated: 0
@@ -21,4 +21,4 @@ MonoBehaviour:
   isExposed: 0
   checkedForFloatingThisFrame: 0
   gameObject: {fileID: 0}
-  meshUVs: {x: 0.5, y: 0}
+  meshUV: {x: 0.875, y: 0}

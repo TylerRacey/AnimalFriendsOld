@@ -13,9 +13,6 @@ MonoBehaviour:
   m_Name: destructible_tree_a70
   m_EditorClassIdentifier: 
   localPosition: {x: 0.011000156, y: 1.9, z: 0.29500002}
-  forward: {x: 0, y: 0, z: 1}
-  right: {x: 1, y: 0, z: 0}
-  up: {x: 0, y: 1, z: 0}
   color: {r: 0.43529412, g: 0.2509804, b: 0, a: 1}
   drawFaces: 000000010001
   adjacentVoxelExportIndexes: 570200005504000036000000ffffffff54000000ffffffff
@@ -24,4 +21,4 @@ MonoBehaviour:
   isExposed: 1
   checkedForFloatingThisFrame: 0
   gameObject: {fileID: 0}
-  meshUVs: {x: 0, y: 0}
+  meshUV: {x: 0.1, y: 0}

@@ -3,8 +3,6 @@ using UnityEditor;
 using System.Collections.Generic;
 using System;
 using System.IO;
-using System.Runtime.InteropServices;
-using System.Linq;
 
 public class VoxelGameObjectToDestructiblePrefab : EditorWindow
 {
@@ -33,8 +31,11 @@ public class VoxelGameObjectToDestructiblePrefab : EditorWindow
 
                 GameObject newGameObject = TurnVoxelsIntoGameObject(selected, meshName);
 
-                FileUtil.DeleteFileOrDirectory(prefabsFolderPath + "/" + meshName);
-                AssetDatabase.CreateFolder(prefabsFolderPath, meshName);
+                if (!AssetDatabase.IsValidFolder(prefabsFolderPath + "/" + meshName))
+                {
+                    AssetDatabase.CreateFolder(prefabsFolderPath, meshName);
+                }
+
                 GameObject prefab = PrefabUtility.SaveAsPrefabAsset(newGameObject, prefabsFolderPath + "/" + meshName + "/" + meshName + ".prefab");
 
                 Selection.activeObject = (GameObject)PrefabUtility.InstantiatePrefab(prefab);
@@ -242,6 +243,7 @@ public class VoxelGameObjectToDestructiblePrefab : EditorWindow
 
         // Make Material Out of Voxel Colors
         MeshRenderer meshRenderer = newGameObject.AddComponent<MeshRenderer>();
+        // float nextPowerOfTwoWidth = pow(2, Mathf.Ceil(Mathf.Log10(x) / log(2)));
         Texture2D texture = new Texture2D(voxelColors.Count * 2, 1);
         int x = 0;
         for (int colorIndex = 0; colorIndex < voxelColors.Count; colorIndex++)
@@ -465,7 +467,7 @@ public class VoxelGameObjectToDestructiblePrefab : EditorWindow
         Vector2[] uvs = new Vector2[vertices.Count];
         for (int index = 0; index < uvs.Length; index++)
         {
-            uvs[index] = voxelExport.meshUVs;
+            uvs[index] = voxelExport.meshUV;
         }
         mesh.uv = uvs;
 

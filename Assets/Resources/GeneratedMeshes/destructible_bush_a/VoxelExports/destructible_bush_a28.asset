@@ -21,4 +21,4 @@ MonoBehaviour:
   isExposed: 0
   checkedForFloatingThisFrame: 0
   gameObject: {fileID: 0}
-  meshUVs: {x: 0.1, y: 0}
+  meshUV: {x: 0.125, y: 0}

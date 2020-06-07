@@ -203,158 +203,23 @@ public static class Utility
         return boxCollider;
     }
 
-    public static GameObject VoxelStructMakeSeperateMesh(VoxelStruct voxelStruct, GameObject parentGameObject)
+    public static void VoxelStructMakeSeperateMesh(VoxelStruct voxelStruct, Mesh voxelMesh, Material material)
     {
-        GameObject voxel = voxelStruct.gameObject;
+        MeshFilter meshFilter = voxelStruct.gameObject.AddComponent<MeshFilter>();
+        meshFilter.mesh = voxelMesh;
 
-        List<int> triangles = new List<int>();
-        List<Vector3> vertices = new List<Vector3>();
-        List<Vector3> normals = new List<Vector3>();
-
-        // FRONT FACE
-        int triangleVerticeStartIndex = 0;
-
-        triangles.Add(triangleVerticeStartIndex);
-        triangles.Add(triangleVerticeStartIndex + 1);
-        triangles.Add(triangleVerticeStartIndex + 2);
-        triangles.Add(triangleVerticeStartIndex);
-        triangles.Add(triangleVerticeStartIndex + 2);
-        triangles.Add(triangleVerticeStartIndex + 3);
-
-        vertices.Add(Vector3.zero);
-        vertices.Add((Vector3.up * Common.VOXEL_SIZE));
-        vertices.Add((Vector3.up * Common.VOXEL_SIZE) + (Vector3.right * Common.VOXEL_SIZE));
-        vertices.Add((Vector3.right * Common.VOXEL_SIZE));
-
-        normals.Add(-Vector3.forward);
-        normals.Add(-Vector3.forward);
-        normals.Add(-Vector3.forward);
-        normals.Add(-Vector3.forward);
-
-
-        // RIGHT FACE
-        triangleVerticeStartIndex = vertices.Count;
-
-        triangles.Add(triangleVerticeStartIndex);
-        triangles.Add(triangleVerticeStartIndex + 1);
-        triangles.Add(triangleVerticeStartIndex + 2);
-        triangles.Add(triangleVerticeStartIndex);
-        triangles.Add(triangleVerticeStartIndex + 2);
-        triangles.Add(triangleVerticeStartIndex + 3);
-
-        vertices.Add((Vector3.right * Common.VOXEL_SIZE));
-        vertices.Add((Vector3.right * Common.VOXEL_SIZE) + (Vector3.up * Common.VOXEL_SIZE));
-        vertices.Add((Vector3.right * Common.VOXEL_SIZE) + (Vector3.up * Common.VOXEL_SIZE) + (Vector3.forward * Common.VOXEL_SIZE));
-        vertices.Add((Vector3.right * Common.VOXEL_SIZE) + (Vector3.forward * Common.VOXEL_SIZE));
-
-        normals.Add(Vector3.right);
-        normals.Add(Vector3.right);
-        normals.Add(Vector3.right);
-        normals.Add(Vector3.right);
-
-        // TOP FACE
-        triangleVerticeStartIndex = vertices.Count;
-
-        triangles.Add(triangleVerticeStartIndex);
-        triangles.Add(triangleVerticeStartIndex + 1);
-        triangles.Add(triangleVerticeStartIndex + 2);
-        triangles.Add(triangleVerticeStartIndex);
-        triangles.Add(triangleVerticeStartIndex + 2);
-        triangles.Add(triangleVerticeStartIndex + 3);
-
-        vertices.Add((Vector3.up * Common.VOXEL_SIZE));
-        vertices.Add((Vector3.up * Common.VOXEL_SIZE) + (Vector3.forward * Common.VOXEL_SIZE));
-        vertices.Add((Vector3.up * Common.VOXEL_SIZE) + (Vector3.forward * Common.VOXEL_SIZE) + (Vector3.right * Common.VOXEL_SIZE));
-        vertices.Add((Vector3.up * Common.VOXEL_SIZE) + (Vector3.right * Common.VOXEL_SIZE));
-
-        normals.Add(Vector3.up);
-        normals.Add(Vector3.up);
-        normals.Add(Vector3.up);
-        normals.Add(Vector3.up);
-
-        // LEFT FACE
-        triangleVerticeStartIndex = vertices.Count;
-
-        triangles.Add(triangleVerticeStartIndex);
-        triangles.Add(triangleVerticeStartIndex + 2);
-        triangles.Add(triangleVerticeStartIndex + 1);
-        triangles.Add(triangleVerticeStartIndex);
-        triangles.Add(triangleVerticeStartIndex + 3);
-        triangles.Add(triangleVerticeStartIndex + 2);
-
-        vertices.Add(Vector3.zero);
-        vertices.Add((Vector3.up * Common.VOXEL_SIZE));
-        vertices.Add((Vector3.up * Common.VOXEL_SIZE) + (Vector3.forward * Common.VOXEL_SIZE));
-        vertices.Add((Vector3.forward * Common.VOXEL_SIZE));
-
-        normals.Add(-Vector3.right);
-        normals.Add(-Vector3.right);
-        normals.Add(-Vector3.right);
-        normals.Add(-Vector3.right);
-
-        // BOTTOM FACE
-        triangleVerticeStartIndex = vertices.Count;
-
-        triangles.Add(triangleVerticeStartIndex);
-        triangles.Add(triangleVerticeStartIndex + 2);
-        triangles.Add(triangleVerticeStartIndex + 1);
-        triangles.Add(triangleVerticeStartIndex);
-        triangles.Add(triangleVerticeStartIndex + 3);
-        triangles.Add(triangleVerticeStartIndex + 2);
-
-        vertices.Add(Vector3.zero);
-        vertices.Add(Vector3.zero + (Vector3.forward * Common.VOXEL_SIZE));
-        vertices.Add(Vector3.zero + (Vector3.forward * Common.VOXEL_SIZE) + (Vector3.right * Common.VOXEL_SIZE));
-        vertices.Add(Vector3.zero + (Vector3.right * Common.VOXEL_SIZE));
-
-        normals.Add(-Vector3.up);
-        normals.Add(-Vector3.up);
-        normals.Add(-Vector3.up);
-        normals.Add(-Vector3.up);
-
-        // BACK FACE
-        triangleVerticeStartIndex = vertices.Count;
-
-        triangles.Add(triangleVerticeStartIndex);
-        triangles.Add(triangleVerticeStartIndex + 2);
-        triangles.Add(triangleVerticeStartIndex + 1);
-        triangles.Add(triangleVerticeStartIndex);
-        triangles.Add(triangleVerticeStartIndex + 3);
-        triangles.Add(triangleVerticeStartIndex + 2);
-
-        vertices.Add(Vector3.zero + (Vector3.forward * Common.VOXEL_SIZE));
-        vertices.Add(Vector3.zero + (Vector3.forward * Common.VOXEL_SIZE) + (Vector3.up * Common.VOXEL_SIZE));
-        vertices.Add(Vector3.zero + (Vector3.forward * Common.VOXEL_SIZE) + (Vector3.up * Common.VOXEL_SIZE) + (Vector3.right * Common.VOXEL_SIZE));
-        vertices.Add(Vector3.zero + (Vector3.forward * Common.VOXEL_SIZE) + (Vector3.right * Common.VOXEL_SIZE));
-
-        normals.Add(Vector3.forward);
-        normals.Add(Vector3.forward);
-        normals.Add(Vector3.forward);
-        normals.Add(Vector3.forward);
-
-        MeshFilter meshFilter = voxel.AddComponent<MeshFilter>();
-
-        Mesh mesh = new Mesh();
-        mesh.vertices = vertices.ToArray();
-        mesh.triangles = triangles.ToArray();
-        mesh.normals = normals.ToArray();
-
-        meshFilter.mesh = mesh;
-
-        Vector2[] uvs = new Vector2[vertices.Count];
+        Vector2[] uvs = new Vector2[voxelMesh.vertices.Length];
         for (int index = 0; index < uvs.Length; index++)
         {
-            uvs[index] = voxelStruct.meshUVs;
+            uvs[index] = voxelStruct.meshUV;
         }
-        mesh.uv = uvs;
+        meshFilter.mesh.uv = uvs;
 
-        MeshRenderer meshRenderer = voxel.AddComponent<MeshRenderer>();
-        meshRenderer.material = parentGameObject.GetComponent<MeshRenderer>().material;
-
-        return voxel;
+        MeshRenderer meshRenderer = voxelStruct.gameObject.AddComponent<MeshRenderer>();
+        meshRenderer.material = material;
     }
 
-    public static GameObject GenerateVoxelGameObjectFromVoxelStruct(VoxelStruct voxelStruct, bool createMesh, Transform parentTransform)
+    public static GameObject GenerateVoxelGameObjectFromVoxelStruct(VoxelStruct voxelStruct, Transform parentTransform)
     {
         GameObject voxel = new GameObject("DestructibleVoxel");
         voxel.layer = LayerMask.NameToLayer("DestructibleVoxel");
@@ -371,9 +236,6 @@ public static class Utility
 
         VoxelData voxelData = voxel.AddComponent<VoxelData>();
         voxelData.voxelStruct = voxelStruct;
-
-        if (!createMesh)
-            return voxel;
 
         bool willRenderVoxel = false;
         foreach (bool drawFace in voxelStruct.drawFaces)
@@ -533,11 +395,22 @@ public static class Utility
         Vector2[] uvs = new Vector2[vertices.Count];
         for (int index = 0; index < uvs.Length; index++)
         {
-            uvs[index] = voxelStruct.meshUVs;
+            uvs[index] = voxelStruct.meshUV;
         }
         mesh.uv = uvs;
 
         meshFilter.mesh = mesh;
+
+        return voxel;
+    }
+
+    public static GameObject GenerateVoxelGameObjectFromVoxelExport(VoxelExport voxelExport, Transform parentTransform)
+    {
+        GameObject voxel = new GameObject("DestructibleVoxel");
+        voxel.layer = LayerMask.NameToLayer("DestructibleVoxel");
+
+        voxel.transform.SetParent(parentTransform);
+        voxel.transform.localPosition = voxelExport.localPosition;
 
         return voxel;
     }
@@ -688,7 +561,7 @@ public static class Utility
         Vector2[] uvs = new Vector2[vertices.Count];
         for (int index = 0; index < uvs.Length; index++)
         {
-            uvs[index] = voxelStruct.meshUVs;
+            uvs[index] = voxelStruct.meshUV;
         }
         mesh.uv = uvs;
 

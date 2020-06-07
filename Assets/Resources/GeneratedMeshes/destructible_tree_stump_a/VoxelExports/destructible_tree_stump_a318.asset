@@ -1,0 +1,24 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 83e0b0593ab68d84a8f9b5ca2b8c8020, type: 3}
+  m_Name: destructible_tree_stump_a318
+  m_EditorClassIdentifier: 
+  localPosition: {x: 0.20000029, y: 0, z: -0.35000002}
+  color: {r: 0.84313726, g: 0.5686275, b: 0.1882353, a: 1}
+  drawFaces: 000000000000
+  adjacentVoxelExportIndexes: 3d0100006a010000460100000b010000ffffffff3f010000
+  isSeperated: 0
+  isAnchor: 1
+  isExposed: 0
+  checkedForFloatingThisFrame: 0
+  gameObject: {fileID: 0}
+  meshUV: {x: 0.7, y: 0}
