@@ -126,11 +126,11 @@ public class MeshToVoxelGameObjects : EditorWindow
         Vector3 up = selectedGameObject.transform.up;
         Vector3 forward = selectedGameObject.transform.forward;
         Vector3 bottomLeftPointOfCollider = center + (right * -rightSize * 0.5f) + (up * -upSize * 0.5f) + (forward * -forwardSize * 0.5f);
-        Vector3 bottomLeftPointOfColliderVoxelCentered = bottomLeftPointOfCollider + (right * 0.5f * Common.VOXEL_SIZE) + (up * 0.5f * Common.VOXEL_SIZE) - (forward * 0.5f * Common.VOXEL_SIZE);
+        Vector3 bottomLeftPointOfColliderVoxelCentered = bottomLeftPointOfCollider + (right * 0.5f * Voxel.SIZE) + (up * 0.5f * Voxel.SIZE) - (forward * 0.5f * Voxel.SIZE);
 
-        int rightVoxelCount = (int)Mathf.Max((rightSize / Common.VOXEL_SIZE), 1);
-        int upVoxelCount = (int)Mathf.Max((upSize / Common.VOXEL_SIZE), 1);
-        int forwardVoxelCount = (int)Mathf.Max((forwardSize / Common.VOXEL_SIZE), 1);
+        int rightVoxelCount = (int)Mathf.Max((rightSize / Voxel.SIZE), 1);
+        int upVoxelCount = (int)Mathf.Max((upSize / Voxel.SIZE), 1);
+        int forwardVoxelCount = (int)Mathf.Max((forwardSize / Voxel.SIZE), 1);
 
         bool insideMesh = false;
 
@@ -141,11 +141,11 @@ public class MeshToVoxelGameObjects : EditorWindow
             {
                 for (int forwardIndex = 0; forwardIndex < forwardVoxelCount + 1; forwardIndex++)
                 {
-                    Vector3 pointA = bottomLeftPointOfColliderVoxelCentered + (right * rightIndex * Common.VOXEL_SIZE) + (up * upIndex * Common.VOXEL_SIZE) + (forward * forwardIndex * Common.VOXEL_SIZE);
-                    Vector3 pointB = pointA + forward * Common.VOXEL_SIZE;
+                    Vector3 pointA = bottomLeftPointOfColliderVoxelCentered + (right * rightIndex * Voxel.SIZE) + (up * upIndex * Voxel.SIZE) + (forward * forwardIndex * Voxel.SIZE);
+                    Vector3 pointB = pointA + forward * Voxel.SIZE;
 
                     RaycastHit raycastHit;
-                    if (Physics.Raycast(pointA, pointB - pointA, out raycastHit, Common.VOXEL_SIZE))
+                    if (Physics.Raycast(pointA, pointB - pointA, out raycastHit, Voxel.SIZE))
                     {
                         GameObject hitObject = raycastHit.collider.gameObject;
 
@@ -154,7 +154,7 @@ public class MeshToVoxelGameObjects : EditorWindow
 
                         insideMesh = !insideMesh;
 
-                        Vector3 voxelPosition = pointA - (right * Common.VOXEL_SIZE * 0.5f) - (up * Common.VOXEL_SIZE * 0.5f) + (forward * 0.5f * Common.VOXEL_SIZE);
+                        Vector3 voxelPosition = pointA - (right * Voxel.SIZE * 0.5f) - (up * Voxel.SIZE * 0.5f) + (forward * 0.5f * Voxel.SIZE);
                         // GameObject sphere = Utility.DebugDrawSphere(raycastHit.point, 0.01f, new Color(1, 0, 0), 10);
                         //GameObject sphere = Utility.DebugDrawSphere(voxelPosition, 0.01f, new Color(1, 0, 0), 10);
                         //sphere.transform.SetParent(newGameObject.transform);
@@ -162,7 +162,7 @@ public class MeshToVoxelGameObjects : EditorWindow
 
                     if (insideMesh)
                     {
-                        Vector3 voxelPosition = pointA - (right * Common.VOXEL_SIZE * 0.5f) - (up * Common.VOXEL_SIZE * 0.5f);
+                        Vector3 voxelPosition = pointA - (right * Voxel.SIZE * 0.5f) - (up * Voxel.SIZE * 0.5f);
                         VoxelStruct voxelStruct = new VoxelStruct(voxelPosition, forward, right, up, material);
                         voxelStructs.Add(voxelStruct);
                     }
@@ -210,9 +210,9 @@ public class MeshToVoxelGameObjects : EditorWindow
         triangles.Add(triangleVerticeStartIndex + 3);
 
         vertices.Add(Vector3.zero);
-        vertices.Add((Vector3.up * Common.VOXEL_SIZE));
-        vertices.Add((Vector3.up * Common.VOXEL_SIZE) + (Vector3.right * Common.VOXEL_SIZE));
-        vertices.Add((Vector3.right * Common.VOXEL_SIZE));
+        vertices.Add((Vector3.up * Voxel.SIZE));
+        vertices.Add((Vector3.up * Voxel.SIZE) + (Vector3.right * Voxel.SIZE));
+        vertices.Add((Vector3.right * Voxel.SIZE));
 
         normals.Add(-Vector3.forward);
         normals.Add(-Vector3.forward);
@@ -229,10 +229,10 @@ public class MeshToVoxelGameObjects : EditorWindow
         triangles.Add(triangleVerticeStartIndex + 2);
         triangles.Add(triangleVerticeStartIndex + 3);
 
-        vertices.Add((Vector3.right * Common.VOXEL_SIZE));
-        vertices.Add((Vector3.right * Common.VOXEL_SIZE) + (Vector3.up * Common.VOXEL_SIZE));
-        vertices.Add((Vector3.right * Common.VOXEL_SIZE) + (Vector3.up * Common.VOXEL_SIZE) + (Vector3.forward * Common.VOXEL_SIZE));
-        vertices.Add((Vector3.right * Common.VOXEL_SIZE) + (Vector3.forward * Common.VOXEL_SIZE));
+        vertices.Add((Vector3.right * Voxel.SIZE));
+        vertices.Add((Vector3.right * Voxel.SIZE) + (Vector3.up * Voxel.SIZE));
+        vertices.Add((Vector3.right * Voxel.SIZE) + (Vector3.up * Voxel.SIZE) + (Vector3.forward * Voxel.SIZE));
+        vertices.Add((Vector3.right * Voxel.SIZE) + (Vector3.forward * Voxel.SIZE));
 
         normals.Add(Vector3.right);
         normals.Add(Vector3.right);
@@ -250,10 +250,10 @@ public class MeshToVoxelGameObjects : EditorWindow
         triangles.Add(triangleVerticeStartIndex + 2);
         triangles.Add(triangleVerticeStartIndex + 3);
 
-        vertices.Add((Vector3.up * Common.VOXEL_SIZE));
-        vertices.Add((Vector3.up * Common.VOXEL_SIZE) + (Vector3.forward * Common.VOXEL_SIZE));
-        vertices.Add((Vector3.up * Common.VOXEL_SIZE) + (Vector3.forward * Common.VOXEL_SIZE) + (Vector3.right * Common.VOXEL_SIZE));
-        vertices.Add((Vector3.up * Common.VOXEL_SIZE) + (Vector3.right * Common.VOXEL_SIZE));
+        vertices.Add((Vector3.up * Voxel.SIZE));
+        vertices.Add((Vector3.up * Voxel.SIZE) + (Vector3.forward * Voxel.SIZE));
+        vertices.Add((Vector3.up * Voxel.SIZE) + (Vector3.forward * Voxel.SIZE) + (Vector3.right * Voxel.SIZE));
+        vertices.Add((Vector3.up * Voxel.SIZE) + (Vector3.right * Voxel.SIZE));
 
         normals.Add(Vector3.up);
         normals.Add(Vector3.up);
@@ -271,9 +271,9 @@ public class MeshToVoxelGameObjects : EditorWindow
         triangles.Add(triangleVerticeStartIndex + 2);
 
         vertices.Add(Vector3.zero);
-        vertices.Add((Vector3.up * Common.VOXEL_SIZE));
-        vertices.Add((Vector3.up * Common.VOXEL_SIZE) + (Vector3.forward * Common.VOXEL_SIZE));
-        vertices.Add((Vector3.forward * Common.VOXEL_SIZE));
+        vertices.Add((Vector3.up * Voxel.SIZE));
+        vertices.Add((Vector3.up * Voxel.SIZE) + (Vector3.forward * Voxel.SIZE));
+        vertices.Add((Vector3.forward * Voxel.SIZE));
 
         normals.Add(-Vector3.right);
         normals.Add(-Vector3.right);
@@ -291,9 +291,9 @@ public class MeshToVoxelGameObjects : EditorWindow
         triangles.Add(triangleVerticeStartIndex + 2);
 
         vertices.Add(Vector3.zero);
-        vertices.Add(Vector3.zero + (Vector3.forward * Common.VOXEL_SIZE));
-        vertices.Add(Vector3.zero + (Vector3.forward * Common.VOXEL_SIZE) + (Vector3.right * Common.VOXEL_SIZE));
-        vertices.Add(Vector3.zero + (Vector3.right * Common.VOXEL_SIZE));
+        vertices.Add(Vector3.zero + (Vector3.forward * Voxel.SIZE));
+        vertices.Add(Vector3.zero + (Vector3.forward * Voxel.SIZE) + (Vector3.right * Voxel.SIZE));
+        vertices.Add(Vector3.zero + (Vector3.right * Voxel.SIZE));
 
         normals.Add(-Vector3.up);
         normals.Add(-Vector3.up);
@@ -310,10 +310,10 @@ public class MeshToVoxelGameObjects : EditorWindow
         triangles.Add(triangleVerticeStartIndex + 3);
         triangles.Add(triangleVerticeStartIndex + 2);
 
-        vertices.Add(Vector3.zero + (Vector3.forward * Common.VOXEL_SIZE));
-        vertices.Add(Vector3.zero + (Vector3.forward * Common.VOXEL_SIZE) + (Vector3.up * Common.VOXEL_SIZE));
-        vertices.Add(Vector3.zero + (Vector3.forward * Common.VOXEL_SIZE) + (Vector3.up * Common.VOXEL_SIZE) + (Vector3.right * Common.VOXEL_SIZE));
-        vertices.Add(Vector3.zero + (Vector3.forward * Common.VOXEL_SIZE) + (Vector3.right * Common.VOXEL_SIZE));
+        vertices.Add(Vector3.zero + (Vector3.forward * Voxel.SIZE));
+        vertices.Add(Vector3.zero + (Vector3.forward * Voxel.SIZE) + (Vector3.up * Voxel.SIZE));
+        vertices.Add(Vector3.zero + (Vector3.forward * Voxel.SIZE) + (Vector3.up * Voxel.SIZE) + (Vector3.right * Voxel.SIZE));
+        vertices.Add(Vector3.zero + (Vector3.forward * Voxel.SIZE) + (Vector3.right * Voxel.SIZE));
 
         normals.Add(Vector3.forward);
         normals.Add(Vector3.forward);

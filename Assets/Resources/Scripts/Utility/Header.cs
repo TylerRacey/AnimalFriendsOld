@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Common
+public static class Voxel
 {
-    public enum VoxelFaces
+    public enum Faces
     {
         FRONT,
         RIGHT,
@@ -15,7 +15,19 @@ public class Common
         SIZE
     }
 
-    public const float VOXEL_SIZE = 0.10f;
+    public static readonly int[][] VertexIndexFaceTriangleAdditions = new int[][]
+    {
+        new int[]{0, 1, 2, 0, 2, 3},
+        new int[]{0, 1, 2, 0, 2, 3},
+        new int[]{0, 1, 2, 0, 2, 3},
+        new int[]{0, 2, 1, 0, 3, 2},
+        new int[]{0, 2, 1, 0, 3, 2},
+        new int[]{0, 2, 1, 0, 3, 2}
+    };
+
+    public const int FACE_QUAD_VERTICES = 4;
+    public const int FACE_TRIANGLES_VERTICES = 6;
+    public const float SIZE = 0.10f;
 }
 
 public class Axis
@@ -39,20 +51,18 @@ public class Math
 public class VoxelStruct
 {
     public Vector3 localPosition;
-    public Vector3 forward;
-    public Vector3 right;
-    public Vector3 up;
     public bool[] drawFaces;
     public bool isSeperated;
     public bool isAnchor;
     public bool isExposed;
     public bool checkedForFloatingThisFrame;
     public Vector2 meshUV;
-    public GameObject gameObject;
     public VoxelStruct[] adjacentVoxelStructs;
-    public BoxCollider boxCollider;
+    public Color color;
+    public int[] faceTriangleStartIndexes;
+    public DestructibleVoxel destructibleVoxel;
 
-    public VoxelStruct(Vector3 _localPosition, bool[] _drawFaces, bool _isSeperated, bool _isAnchor, bool _isExposed, bool _checkedForFloatingThisFrame, GameObject _gameObject, Vector2 _meshUV, VoxelStruct[] _adjacentVoxelStructs, BoxCollider _boxCollider)
+    public VoxelStruct(Vector3 _localPosition, bool[] _drawFaces, bool _isSeperated, bool _isAnchor, bool _isExposed, bool _checkedForFloatingThisFrame, Vector2 _meshUV, VoxelStruct[] _adjacentVoxelStructs, Color _color, int[] _faceTriangleStartIndexes, DestructibleVoxel _destructibleVoxel)
     {
         localPosition = _localPosition;
         drawFaces = _drawFaces;
@@ -60,9 +70,10 @@ public class VoxelStruct
         isAnchor = _isAnchor;
         isExposed = _isExposed;
         checkedForFloatingThisFrame = _checkedForFloatingThisFrame;
-        gameObject = _gameObject;
         meshUV = _meshUV;
         adjacentVoxelStructs = _adjacentVoxelStructs;
-        boxCollider = _boxCollider;
+        color = _color;
+        faceTriangleStartIndexes = _faceTriangleStartIndexes;
+        destructibleVoxel = _destructibleVoxel;
     }
 }

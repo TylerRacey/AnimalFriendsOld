@@ -4,10 +4,7 @@ using UnityEngine;
 
 public class PlayerViewmodel : MonoBehaviour
 {
-    private GameObject player;
-    private PlayerInput playerInput;
-    private Transform playerEye;
-    private PlayerInventory playerInventory;
+    private Game game;
 
     private InventoryItem previousSelectedInventoryItem;
 
@@ -23,10 +20,7 @@ public class PlayerViewmodel : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        player = GameObject.FindWithTag("Player");
-        playerInput = player.GetComponent<PlayerInput>();
-        playerEye = player.transform.Find("Eye");
-        playerInventory = player.GetComponent<PlayerInventory>();
+        game = Game.GetGame();
 
         animator = GetComponent<Animator>();
         defaultMesh = gameObject.GetComponent<MeshFilter>().mesh;
@@ -40,17 +34,17 @@ public class PlayerViewmodel : MonoBehaviour
 
         UpdateSwinging();
 
-        previousSelectedInventoryItem = playerInventory.toolbarItemSlots[playerInventory.selectedSlotIndex].inventoryItem;
+        previousSelectedInventoryItem = game.playerInventory.toolbarItemSlots[game.playerInventory.selectedSlotIndex].inventoryItem;
     }
 
     private void UpdateCurrentViewmodel()
     {
-        bool changedSelectedInventoryItem = !playerInventory.selectedInventoryItem.viewmodel.Equals(currentViewmodel);
+        bool changedSelectedInventoryItem = !game.playerInventory.selectedInventoryItem.viewmodel.Equals(currentViewmodel);
         if (changedSelectedInventoryItem)
         {
-            if (playerInventory.PlayerCurrentlySelectingAnItem())
+            if (game.playerInventory.PlayerCurrentlySelectingAnItem())
             {
-                SetViewModel(playerInventory.selectedInventoryItem.viewmodel);
+                SetViewModel(game.playerInventory.selectedInventoryItem.viewmodel);
             }
             else
             {
@@ -61,9 +55,16 @@ public class PlayerViewmodel : MonoBehaviour
 
     void UpdateSwinging()
     {
-        if (playerInput.SwingPressed())
+        if (game.playerInput.SwingPressed())
         {
             animator.CrossFade(currentViewmodel.viewmodelName + "_swing", 0.10f, -1, 0.0f);
+            
+            RaycastHit hit;
+            if (Physics.Raycast(game.playerEye.position, game.playerEye.forward, out hit, axeSwingTrunkDistance, LayerMask.GetMask("Destructible")))
+            {
+                hit.collider.gameObject.GetComponent<Destructible>().AssignDestructibleVoxels();
+            }
+
             swinging = true;
         }
     }
@@ -104,7 +105,7 @@ public class PlayerViewmodel : MonoBehaviour
     public void AxeSwingImpact()
     {
         RaycastHit hit;
-        if (Physics.Raycast(playerEye.position, playerEye.forward, out hit, axeSwingTrunkDistance, LayerMask.GetMask("Destructible")))
+        if (Physics.Raycast(game.playerEye.position, game.playerEye.forward, out hit, axeSwingTrunkDistance, LayerMask.GetMask("Destructible")))
         {
             hit.collider.gameObject.GetComponent<Destructible>().TakeDamage(hit.point, axeSwingDamageRadius);
         }

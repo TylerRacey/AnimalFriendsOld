@@ -100,17 +100,17 @@ public class VoxelGameObjectToDestructiblePrefab : EditorWindow
             BoxCollider boxCollider = voxel.GetComponent<BoxCollider>();
             Vector3 voxelCenter = boxCollider.bounds.center;
 
-            bool[] drawFaces = new bool[(int)Common.VoxelFaces.SIZE];
+            bool[] drawFaces = new bool[(int)Voxel.Faces.SIZE];
 
             Vector3[] faceDirectionChecks = new Vector3[] { -voxel.transform.forward, voxel.transform.right, voxel.transform.up, -voxel.transform.right, -voxel.transform.up, voxel.transform.forward };
 
             // Trace to see which voxel faces to draw, along if it's an anchor or exposed
             bool isAnchor = false;
             bool isExposed = false;
-            for (int directionIndex = 0; directionIndex < (int)Common.VoxelFaces.SIZE; directionIndex++)
+            for (int directionIndex = 0; directionIndex < (int)Voxel.Faces.SIZE; directionIndex++)
             {
                 RaycastHit raycastHit;
-                if (Physics.Raycast(voxelCenter, faceDirectionChecks[directionIndex], out raycastHit, Common.VOXEL_SIZE))
+                if (Physics.Raycast(voxelCenter, faceDirectionChecks[directionIndex], out raycastHit, Voxel.SIZE))
                 {
                     GameObject hitObject = raycastHit.collider.gameObject;
 
@@ -127,7 +127,8 @@ public class VoxelGameObjectToDestructiblePrefab : EditorWindow
                 }
             }
 
-            // Create Voxel Render
+            // Create Voxel Export
+            Material voxelMaterial = voxel.GetComponent<MeshRenderer>().sharedMaterial;
             Color voxelColor = voxel.GetComponent<MeshRenderer>().sharedMaterial.color;
             Vector2 voxelMeshUVs = new Vector2((voxelColors.IndexOf(voxelColor) / (float)voxelColors.Count) + (0.5f / voxelColors.Count), 0);
             VoxelExport voxelExport = VoxelExport.CreateInstance(voxel.transform.localPosition, voxelColor, drawFaces, null, false, isAnchor, isExposed, false, null, voxelMeshUVs);
@@ -172,26 +173,26 @@ public class VoxelGameObjectToDestructiblePrefab : EditorWindow
             GameObject generatedVoxel = voxelExport.gameObject;
 
             Vector3[] faceDirectionChecks = Utility.GetVoxelFaceDirections(generatedVoxel);
-            for (int directionIndex = 0; directionIndex < (int)Common.VoxelFaces.SIZE; directionIndex++)
+            for (int directionIndex = 0; directionIndex < (int)Voxel.Faces.SIZE; directionIndex++)
             {
                 RaycastHit raycastHit;
-                if (Physics.Raycast(generatedVoxel.GetComponent<BoxCollider>().bounds.center, faceDirectionChecks[directionIndex], out raycastHit, Common.VOXEL_SIZE))
+                if (Physics.Raycast(generatedVoxel.GetComponent<BoxCollider>().bounds.center, faceDirectionChecks[directionIndex], out raycastHit, Voxel.SIZE))
                 {
                     GameObject hitObject = raycastHit.collider.gameObject;
 
                     if (!generatedVoxels.Contains(hitObject))
                         continue;
 
-                    if(voxelExport.adjacentVoxelExportIndexes == null)
+                    if (voxelExport.adjacentVoxelExportIndexes == null)
                     {
-                        voxelExport.adjacentVoxelExportIndexes = new int[(int)Common.VoxelFaces.SIZE];
-                        for(int index = 0; index < voxelExport.adjacentVoxelExportIndexes.Length;index++)
+                        voxelExport.adjacentVoxelExportIndexes = new int[(int)Voxel.Faces.SIZE];
+                        for (int index = 0; index < voxelExport.adjacentVoxelExportIndexes.Length; index++)
                         {
                             voxelExport.adjacentVoxelExportIndexes[index] = -1;
                         }
                     }
 
-                    foreach(VoxelExport checkedVoxelExport in voxelExports)
+                    foreach (VoxelExport checkedVoxelExport in voxelExports)
                     {
                         if (checkedVoxelExport.gameObject != hitObject)
                             continue;
@@ -200,7 +201,7 @@ public class VoxelGameObjectToDestructiblePrefab : EditorWindow
                     }
                 }
             }
-        }   
+        }
 
         // Build Parent Box Collider From Voxel Colliders
         Bounds newGameObjectBounds = new Bounds(Vector3.zero, Vector3.zero);
@@ -208,10 +209,10 @@ public class VoxelGameObjectToDestructiblePrefab : EditorWindow
         {
             GameObject voxel = generatedVoxels[voxelIndex];
 
-            Vector3 voxelCenter = voxel.transform.localPosition + voxel.transform.up * Common.VOXEL_SIZE * 0.5f + voxel.transform.right * Common.VOXEL_SIZE * 0.5f + voxel.transform.forward * Common.VOXEL_SIZE * 0.5f;
+            Vector3 voxelCenter = voxel.transform.localPosition + voxel.transform.up * Voxel.SIZE * 0.5f + voxel.transform.right * Voxel.SIZE * 0.5f + voxel.transform.forward * Voxel.SIZE * 0.5f;
 
             Bounds voxelBounds = new Bounds();
-            voxelBounds.size = new Vector3(Common.VOXEL_SIZE, Common.VOXEL_SIZE, Common.VOXEL_SIZE);
+            voxelBounds.size = new Vector3(Voxel.SIZE, Voxel.SIZE, Voxel.SIZE);
             voxelBounds.center = voxelCenter;
 
             newGameObjectBounds.Encapsulate(voxelBounds);
@@ -220,20 +221,185 @@ public class VoxelGameObjectToDestructiblePrefab : EditorWindow
         newGameObjectBoxCollider.center = newGameObjectBounds.center;
         newGameObjectBoxCollider.size = newGameObjectBounds.size;
 
-        // Combine All Meshes Into Parent Mesh
-        CombineInstance[] combineInstances = new CombineInstance[exposedVoxelExports.Count];
-        for (int voxelIndex = 0; voxelIndex < exposedVoxelExports.Count; voxelIndex++)
-        {
-            GameObject exposedVoxel = exposedVoxelExports[voxelIndex].gameObject;
-            MeshFilter meshFilter = exposedVoxel.GetComponent<MeshFilter>();
+        // MESH CREATION START 
+        List<int> triangles = new List<int>();
+        List<Vector3> vertices = new List<Vector3>();
+        List<Vector3> normals = new List<Vector3>();
+        List<Vector2> uvs = new List<Vector2>();
 
-            combineInstances[voxelIndex].mesh = meshFilter.sharedMesh;
-            combineInstances[voxelIndex].transform = Matrix4x4.TRS(exposedVoxel.transform.localPosition, exposedVoxel.transform.localRotation, Vector3.one);
-            DestroyImmediate(meshFilter);
+        for (int voxelIndex = 0; voxelIndex < voxelExports.Count; voxelIndex++)
+        {
+            VoxelExport voxelExport = voxelExports[voxelIndex];
+
+            int triangleRootVerticeIndex = vertices.Count;
+            voxelExport.faceTriangleStartIndexes[(int)Voxel.Faces.FRONT] = triangleRootVerticeIndex;
+            if (voxelExport.drawFaces[(int)Voxel.Faces.FRONT])
+            {
+                triangles.Add(triangleRootVerticeIndex);
+                triangles.Add(triangleRootVerticeIndex + 1);
+                triangles.Add(triangleRootVerticeIndex + 2);
+                triangles.Add(triangleRootVerticeIndex);
+                triangles.Add(triangleRootVerticeIndex + 2);
+                triangles.Add(triangleRootVerticeIndex + 3);
+            }
+            vertices.Add(voxelExport.localPosition);
+            vertices.Add(voxelExport.localPosition + (Vector3.up * Voxel.SIZE));
+            vertices.Add(voxelExport.localPosition + (Vector3.up * Voxel.SIZE) + (Vector3.right * Voxel.SIZE));
+            vertices.Add(voxelExport.localPosition + (Vector3.right * Voxel.SIZE));
+
+            normals.Add(-Vector3.forward);
+            normals.Add(-Vector3.forward);
+            normals.Add(-Vector3.forward);
+            normals.Add(-Vector3.forward);
+
+            uvs.Add(voxelExport.meshUV);
+            uvs.Add(voxelExport.meshUV);
+            uvs.Add(voxelExport.meshUV);
+            uvs.Add(voxelExport.meshUV);
+
+            triangleRootVerticeIndex = vertices.Count;
+            voxelExport.faceTriangleStartIndexes[(int)Voxel.Faces.RIGHT] = triangleRootVerticeIndex;
+            if (voxelExport.drawFaces[(int)Voxel.Faces.RIGHT])
+            {
+                triangles.Add(triangleRootVerticeIndex);
+                triangles.Add(triangleRootVerticeIndex + 1);
+                triangles.Add(triangleRootVerticeIndex + 2);
+                triangles.Add(triangleRootVerticeIndex);
+                triangles.Add(triangleRootVerticeIndex + 2);
+                triangles.Add(triangleRootVerticeIndex + 3);
+            }
+            vertices.Add(voxelExport.localPosition + (Vector3.right * Voxel.SIZE));
+            vertices.Add(voxelExport.localPosition + (Vector3.right * Voxel.SIZE) + (Vector3.up * Voxel.SIZE));
+            vertices.Add(voxelExport.localPosition + (Vector3.right * Voxel.SIZE) + (Vector3.up * Voxel.SIZE) + (Vector3.forward * Voxel.SIZE));
+            vertices.Add(voxelExport.localPosition + (Vector3.right * Voxel.SIZE) + (Vector3.forward * Voxel.SIZE));
+
+            normals.Add(Vector3.right);
+            normals.Add(Vector3.right);
+            normals.Add(Vector3.right);
+            normals.Add(Vector3.right);
+
+            uvs.Add(voxelExport.meshUV);
+            uvs.Add(voxelExport.meshUV);
+            uvs.Add(voxelExport.meshUV);
+            uvs.Add(voxelExport.meshUV);
+
+
+            triangleRootVerticeIndex = vertices.Count;
+            voxelExport.faceTriangleStartIndexes[(int)Voxel.Faces.TOP] = triangleRootVerticeIndex;
+            if (voxelExport.drawFaces[(int)Voxel.Faces.TOP])
+            {
+                triangles.Add(triangleRootVerticeIndex);
+                triangles.Add(triangleRootVerticeIndex + 1);
+                triangles.Add(triangleRootVerticeIndex + 2);
+                triangles.Add(triangleRootVerticeIndex);
+                triangles.Add(triangleRootVerticeIndex + 2);
+                triangles.Add(triangleRootVerticeIndex + 3);
+            }
+            vertices.Add(voxelExport.localPosition + (Vector3.up * Voxel.SIZE));
+            vertices.Add(voxelExport.localPosition + (Vector3.up * Voxel.SIZE) + (Vector3.forward * Voxel.SIZE));
+            vertices.Add(voxelExport.localPosition + (Vector3.up * Voxel.SIZE) + (Vector3.forward * Voxel.SIZE) + (Vector3.right * Voxel.SIZE));
+            vertices.Add(voxelExport.localPosition + (Vector3.up * Voxel.SIZE) + (Vector3.right * Voxel.SIZE));
+
+            normals.Add(Vector3.up);
+            normals.Add(Vector3.up);
+            normals.Add(Vector3.up);
+            normals.Add(Vector3.up);
+
+            uvs.Add(voxelExport.meshUV);
+            uvs.Add(voxelExport.meshUV);
+            uvs.Add(voxelExport.meshUV);
+            uvs.Add(voxelExport.meshUV);
+
+
+            triangleRootVerticeIndex = vertices.Count;
+            voxelExport.faceTriangleStartIndexes[(int)Voxel.Faces.LEFT] = triangleRootVerticeIndex;
+            if (voxelExport.drawFaces[(int)Voxel.Faces.LEFT])
+            {
+                triangles.Add(triangleRootVerticeIndex);
+                triangles.Add(triangleRootVerticeIndex + 2);
+                triangles.Add(triangleRootVerticeIndex + 1);
+                triangles.Add(triangleRootVerticeIndex);
+                triangles.Add(triangleRootVerticeIndex + 3);
+                triangles.Add(triangleRootVerticeIndex + 2);
+            }
+            vertices.Add(voxelExport.localPosition);
+            vertices.Add(voxelExport.localPosition + (Vector3.up * Voxel.SIZE));
+            vertices.Add(voxelExport.localPosition + (Vector3.up * Voxel.SIZE) + (Vector3.forward * Voxel.SIZE));
+            vertices.Add(voxelExport.localPosition + (Vector3.forward * Voxel.SIZE));
+
+            normals.Add(-Vector3.right);
+            normals.Add(-Vector3.right);
+            normals.Add(-Vector3.right);
+            normals.Add(-Vector3.right);
+
+            uvs.Add(voxelExport.meshUV);
+            uvs.Add(voxelExport.meshUV);
+            uvs.Add(voxelExport.meshUV);
+            uvs.Add(voxelExport.meshUV);
+
+
+            triangleRootVerticeIndex = vertices.Count;
+            voxelExport.faceTriangleStartIndexes[(int)Voxel.Faces.BOTTOM] = triangleRootVerticeIndex;
+            if (voxelExport.drawFaces[(int)Voxel.Faces.BOTTOM])
+            {
+                triangles.Add(triangleRootVerticeIndex);
+                triangles.Add(triangleRootVerticeIndex + 2);
+                triangles.Add(triangleRootVerticeIndex + 1);
+                triangles.Add(triangleRootVerticeIndex);
+                triangles.Add(triangleRootVerticeIndex + 3);
+                triangles.Add(triangleRootVerticeIndex + 2);
+            }
+            vertices.Add(voxelExport.localPosition);
+            vertices.Add(voxelExport.localPosition + (Vector3.forward * Voxel.SIZE));
+            vertices.Add(voxelExport.localPosition + (Vector3.forward * Voxel.SIZE) + (Vector3.right * Voxel.SIZE));
+            vertices.Add(voxelExport.localPosition + (Vector3.right * Voxel.SIZE));
+
+            normals.Add(-Vector3.up);
+            normals.Add(-Vector3.up);
+            normals.Add(-Vector3.up);
+            normals.Add(-Vector3.up);
+
+            uvs.Add(voxelExport.meshUV);
+            uvs.Add(voxelExport.meshUV);
+            uvs.Add(voxelExport.meshUV);
+            uvs.Add(voxelExport.meshUV);
+
+
+            triangleRootVerticeIndex = vertices.Count;
+            voxelExport.faceTriangleStartIndexes[(int)Voxel.Faces.BACK] = triangleRootVerticeIndex;
+            if (voxelExport.drawFaces[(int)Voxel.Faces.BACK])
+            {
+                triangles.Add(triangleRootVerticeIndex);
+                triangles.Add(triangleRootVerticeIndex + 2);
+                triangles.Add(triangleRootVerticeIndex + 1);
+                triangles.Add(triangleRootVerticeIndex);
+                triangles.Add(triangleRootVerticeIndex + 3);
+                triangles.Add(triangleRootVerticeIndex + 2);
+            }
+            vertices.Add(voxelExport.localPosition + (Vector3.forward * Voxel.SIZE));
+            vertices.Add(voxelExport.localPosition + (Vector3.forward * Voxel.SIZE) + (Vector3.up * Voxel.SIZE));
+            vertices.Add(voxelExport.localPosition + (Vector3.forward * Voxel.SIZE) + (Vector3.up * Voxel.SIZE) + (Vector3.right * Voxel.SIZE));
+            vertices.Add(voxelExport.localPosition + (Vector3.forward * Voxel.SIZE) + (Vector3.right * Voxel.SIZE));
+
+            normals.Add(Vector3.forward);
+            normals.Add(Vector3.forward);
+            normals.Add(Vector3.forward);
+            normals.Add(Vector3.forward);
+
+            uvs.Add(voxelExport.meshUV);
+            uvs.Add(voxelExport.meshUV);
+            uvs.Add(voxelExport.meshUV);
+            uvs.Add(voxelExport.meshUV);
         }
+
+        Mesh mesh = new Mesh();
+        mesh.vertices = vertices.ToArray();
+        mesh.triangles = triangles.ToArray();
+        mesh.normals = normals.ToArray();
+        mesh.uv = uvs.ToArray();
+
         MeshFilter newMeshFilter = newGameObject.AddComponent<MeshFilter>();
-        newMeshFilter.mesh = new Mesh();
-        newMeshFilter.sharedMesh.CombineMeshes(combineInstances, true, true, true);
+        newMeshFilter.mesh = mesh;
 
         // Delete all generated voxel game objects
         for (int voxelIndex = 0; voxelIndex < voxelExports.Count; voxelIndex++)
@@ -265,7 +431,7 @@ public class VoxelGameObjectToDestructiblePrefab : EditorWindow
 
         for (int index = 0; index < voxelExports.Count; index++)
         {
-            AssetDatabase.CreateAsset(voxelExports[index], AssetDatabase.GenerateUniqueAssetPath(assetsFolderPath + "/" + meshName + "/VoxelExports/" + meshName + index + ".asset" ));
+            AssetDatabase.CreateAsset(voxelExports[index], AssetDatabase.GenerateUniqueAssetPath(assetsFolderPath + "/" + meshName + "/VoxelExports/" + meshName + index + ".asset"));
         }
 
         AssetDatabase.SaveAssets();
@@ -308,170 +474,6 @@ public class VoxelGameObjectToDestructiblePrefab : EditorWindow
         voxel.layer = LayerMask.NameToLayer("DestructibleVoxel");
         voxel.transform.SetParent(parentTransform);
         voxel.transform.localPosition = voxelExport.localPosition;
-
-        bool willRenderVoxel = false;
-        foreach (bool drawFace in voxelExport.drawFaces)
-        {
-            if (!drawFace)
-                continue;
-
-            willRenderVoxel = true;
-            break;
-        }
-        if (!willRenderVoxel)
-            return voxel;
-
-        List<int> triangles = new List<int>();
-        List<Vector3> vertices = new List<Vector3>();
-        List<Vector3> normals = new List<Vector3>();
-
-        if (voxelExport.drawFaces[(int)Common.VoxelFaces.FRONT])
-        {
-            int triangleVerticeStartIndex = vertices.Count;
-
-            triangles.Add(triangleVerticeStartIndex);
-            triangles.Add(triangleVerticeStartIndex + 1);
-            triangles.Add(triangleVerticeStartIndex + 2);
-            triangles.Add(triangleVerticeStartIndex);
-            triangles.Add(triangleVerticeStartIndex + 2);
-            triangles.Add(triangleVerticeStartIndex + 3);
-
-            vertices.Add(Vector3.zero);
-            vertices.Add((Vector3.up * Common.VOXEL_SIZE));
-            vertices.Add((Vector3.up * Common.VOXEL_SIZE) + (Vector3.right * Common.VOXEL_SIZE));
-            vertices.Add((Vector3.right * Common.VOXEL_SIZE));
-
-            normals.Add(-Vector3.forward);
-            normals.Add(-Vector3.forward);
-            normals.Add(-Vector3.forward);
-            normals.Add(-Vector3.forward);
-        }
-
-        if (voxelExport.drawFaces[(int)Common.VoxelFaces.RIGHT])
-        {
-            int triangleVerticeStartIndex = vertices.Count;
-
-            triangles.Add(triangleVerticeStartIndex);
-            triangles.Add(triangleVerticeStartIndex + 1);
-            triangles.Add(triangleVerticeStartIndex + 2);
-            triangles.Add(triangleVerticeStartIndex);
-            triangles.Add(triangleVerticeStartIndex + 2);
-            triangles.Add(triangleVerticeStartIndex + 3);
-
-            vertices.Add((Vector3.right * Common.VOXEL_SIZE));
-            vertices.Add((Vector3.right * Common.VOXEL_SIZE) + (Vector3.up * Common.VOXEL_SIZE));
-            vertices.Add((Vector3.right * Common.VOXEL_SIZE) + (Vector3.up * Common.VOXEL_SIZE) + (Vector3.forward * Common.VOXEL_SIZE));
-            vertices.Add((Vector3.right * Common.VOXEL_SIZE) + (Vector3.forward * Common.VOXEL_SIZE));
-
-            normals.Add(Vector3.right);
-            normals.Add(Vector3.right);
-            normals.Add(Vector3.right);
-            normals.Add(Vector3.right);
-        }
-
-        if (voxelExport.drawFaces[(int)Common.VoxelFaces.TOP])
-        {
-            int triangleVerticeStartIndex = vertices.Count;
-
-            triangles.Add(triangleVerticeStartIndex);
-            triangles.Add(triangleVerticeStartIndex + 1);
-            triangles.Add(triangleVerticeStartIndex + 2);
-            triangles.Add(triangleVerticeStartIndex);
-            triangles.Add(triangleVerticeStartIndex + 2);
-            triangles.Add(triangleVerticeStartIndex + 3);
-
-            vertices.Add((Vector3.up * Common.VOXEL_SIZE));
-            vertices.Add((Vector3.up * Common.VOXEL_SIZE) + (Vector3.forward * Common.VOXEL_SIZE));
-            vertices.Add((Vector3.up * Common.VOXEL_SIZE) + (Vector3.forward * Common.VOXEL_SIZE) + (Vector3.right * Common.VOXEL_SIZE));
-            vertices.Add((Vector3.up * Common.VOXEL_SIZE) + (Vector3.right * Common.VOXEL_SIZE));
-
-            normals.Add(Vector3.up);
-            normals.Add(Vector3.up);
-            normals.Add(Vector3.up);
-            normals.Add(Vector3.up);
-        }
-
-        if (voxelExport.drawFaces[(int)Common.VoxelFaces.LEFT])
-        {
-            int triangleVerticeStartIndex = vertices.Count;
-
-            triangles.Add(triangleVerticeStartIndex);
-            triangles.Add(triangleVerticeStartIndex + 2);
-            triangles.Add(triangleVerticeStartIndex + 1);
-            triangles.Add(triangleVerticeStartIndex);
-            triangles.Add(triangleVerticeStartIndex + 3);
-            triangles.Add(triangleVerticeStartIndex + 2);
-
-            vertices.Add(Vector3.zero);
-            vertices.Add((Vector3.up * Common.VOXEL_SIZE));
-            vertices.Add((Vector3.up * Common.VOXEL_SIZE) + (Vector3.forward * Common.VOXEL_SIZE));
-            vertices.Add((Vector3.forward * Common.VOXEL_SIZE));
-
-            normals.Add(-Vector3.right);
-            normals.Add(-Vector3.right);
-            normals.Add(-Vector3.right);
-            normals.Add(-Vector3.right);
-        }
-
-        if (voxelExport.drawFaces[(int)Common.VoxelFaces.BOTTOM])
-        {
-            int triangleVerticeStartIndex = vertices.Count;
-
-            triangles.Add(triangleVerticeStartIndex);
-            triangles.Add(triangleVerticeStartIndex + 2);
-            triangles.Add(triangleVerticeStartIndex + 1);
-            triangles.Add(triangleVerticeStartIndex);
-            triangles.Add(triangleVerticeStartIndex + 3);
-            triangles.Add(triangleVerticeStartIndex + 2);
-
-            vertices.Add(Vector3.zero);
-            vertices.Add(Vector3.zero + (Vector3.forward * Common.VOXEL_SIZE));
-            vertices.Add(Vector3.zero + (Vector3.forward * Common.VOXEL_SIZE) + (Vector3.right * Common.VOXEL_SIZE));
-            vertices.Add(Vector3.zero + (Vector3.right * Common.VOXEL_SIZE));
-
-            normals.Add(-Vector3.up);
-            normals.Add(-Vector3.up);
-            normals.Add(-Vector3.up);
-            normals.Add(-Vector3.up);
-        }
-
-        if (voxelExport.drawFaces[(int)Common.VoxelFaces.BACK])
-        {
-            int triangleVerticeStartIndex = vertices.Count;
-
-            triangles.Add(triangleVerticeStartIndex);
-            triangles.Add(triangleVerticeStartIndex + 2);
-            triangles.Add(triangleVerticeStartIndex + 1);
-            triangles.Add(triangleVerticeStartIndex);
-            triangles.Add(triangleVerticeStartIndex + 3);
-            triangles.Add(triangleVerticeStartIndex + 2);
-
-            vertices.Add(Vector3.zero + (Vector3.forward * Common.VOXEL_SIZE));
-            vertices.Add(Vector3.zero + (Vector3.forward * Common.VOXEL_SIZE) + (Vector3.up * Common.VOXEL_SIZE));
-            vertices.Add(Vector3.zero + (Vector3.forward * Common.VOXEL_SIZE) + (Vector3.up * Common.VOXEL_SIZE) + (Vector3.right * Common.VOXEL_SIZE));
-            vertices.Add(Vector3.zero + (Vector3.forward * Common.VOXEL_SIZE) + (Vector3.right * Common.VOXEL_SIZE));
-
-            normals.Add(Vector3.forward);
-            normals.Add(Vector3.forward);
-            normals.Add(Vector3.forward);
-            normals.Add(Vector3.forward);
-        }
-
-        MeshFilter meshFilter = voxel.AddComponent<MeshFilter>();
-
-        Mesh mesh = new Mesh();
-        mesh.vertices = vertices.ToArray();
-        mesh.triangles = triangles.ToArray();
-        mesh.normals = normals.ToArray();
-
-        Vector2[] uvs = new Vector2[vertices.Count];
-        for (int index = 0; index < uvs.Length; index++)
-        {
-            uvs[index] = voxelExport.meshUV;
-        }
-        mesh.uv = uvs;
-
-        meshFilter.mesh = mesh;
 
         return voxel;
     }

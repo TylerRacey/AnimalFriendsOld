@@ -106,7 +106,6 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 659773092136305809}
-  - {fileID: 750771458846601289}
   m_Father: {fileID: 4689316579494043367}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -412,7 +411,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e71c498e32e89b64ab6d86955b1de508, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  eye: {fileID: 4689316580551165481}
   localMoveVector: {x: 0, y: 0, z: 0}
   maxSpeed: 0
   isSprinting: 0
@@ -562,84 +560,4 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 659773091346085977, guid: c57eb3d0a77de4e408aebab64f837353,
     type: 3}
   m_PrefabInstance: {fileID: 858668232}
-  m_PrefabAsset: {fileID: 0}
---- !u!1001 &167592716004164617
-PrefabInstance:
-  m_ObjectHideFlags: 0
-  serializedVersion: 2
-  m_Modification:
-    m_TransformParent: {fileID: 485986634}
-    m_Modifications:
-    - target: {fileID: 592273954040886336, guid: efdaa97a4bbb9a040966255784589008,
-        type: 3}
-      propertyPath: m_LocalPosition.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 592273954040886336, guid: efdaa97a4bbb9a040966255784589008,
-        type: 3}
-      propertyPath: m_LocalPosition.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 592273954040886336, guid: efdaa97a4bbb9a040966255784589008,
-        type: 3}
-      propertyPath: m_LocalPosition.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 592273954040886336, guid: efdaa97a4bbb9a040966255784589008,
-        type: 3}
-      propertyPath: m_LocalRotation.x
-      value: -0
-      objectReference: {fileID: 0}
-    - target: {fileID: 592273954040886336, guid: efdaa97a4bbb9a040966255784589008,
-        type: 3}
-      propertyPath: m_LocalRotation.y
-      value: -0
-      objectReference: {fileID: 0}
-    - target: {fileID: 592273954040886336, guid: efdaa97a4bbb9a040966255784589008,
-        type: 3}
-      propertyPath: m_LocalRotation.z
-      value: -0
-      objectReference: {fileID: 0}
-    - target: {fileID: 592273954040886336, guid: efdaa97a4bbb9a040966255784589008,
-        type: 3}
-      propertyPath: m_LocalRotation.w
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 592273954040886336, guid: efdaa97a4bbb9a040966255784589008,
-        type: 3}
-      propertyPath: m_RootOrder
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 592273954040886336, guid: efdaa97a4bbb9a040966255784589008,
-        type: 3}
-      propertyPath: m_LocalEulerAnglesHint.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 592273954040886336, guid: efdaa97a4bbb9a040966255784589008,
-        type: 3}
-      propertyPath: m_LocalEulerAnglesHint.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 592273954040886336, guid: efdaa97a4bbb9a040966255784589008,
-        type: 3}
-      propertyPath: m_LocalEulerAnglesHint.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 8359685044547864891, guid: efdaa97a4bbb9a040966255784589008,
-        type: 3}
-      propertyPath: m_Name
-      value: Apple Destroyed On Load
-      objectReference: {fileID: 0}
-    - target: {fileID: 8359685044547864891, guid: efdaa97a4bbb9a040966255784589008,
-        type: 3}
-      propertyPath: m_Layer
-      value: 8
-      objectReference: {fileID: 0}
-    m_RemovedComponents: []
-  m_SourcePrefab: {fileID: 100100000, guid: efdaa97a4bbb9a040966255784589008, type: 3}
---- !u!4 &750771458846601289 stripped
-Transform:
-  m_CorrespondingSourceObject: {fileID: 592273954040886336, guid: efdaa97a4bbb9a040966255784589008,
-    type: 3}
-  m_PrefabInstance: {fileID: 167592716004164617}
   m_PrefabAsset: {fileID: 0}

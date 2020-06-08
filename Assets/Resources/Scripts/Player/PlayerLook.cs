@@ -4,11 +4,10 @@ using UnityEngine;
 
 public class PlayerLook : MonoBehaviour
 {
-    private CharacterController characterController;
-    private PlayerMovement playerMovement;
-    private Animator playerAnimator;
-    private PlayerInput playerInput;
+    private Game game;
+
     private Camera cameraComponent;
+    private Animator playerAnimator;
 
     [SerializeField]
     private Transform player, playerEye, mainCamera;
@@ -35,11 +34,10 @@ public class PlayerLook : MonoBehaviour
 
     void Awake()
     {
-        characterController = GetComponent<CharacterController>();
-        playerMovement = GetComponent<PlayerMovement>();
-        playerAnimator = mainCamera.GetComponent<Animator>();
-        playerInput = GetComponent<PlayerInput>();
-        cameraComponent = mainCamera.GetComponent<Camera>();
+        game = Game.GetGame();
+
+        cameraComponent = game.mainCamera.GetComponent<Camera>();
+        playerAnimator = game.mainCamera.GetComponent<Animator>();
     }
 
     // Start is called before the first frame update
@@ -63,8 +61,8 @@ public class PlayerLook : MonoBehaviour
             // ApplyStanceChangeShake();
         }
 
-        wasGrounded = characterController.isGrounded;
-        previousStance = playerMovement.currentStance;
+        wasGrounded = game.characterController.isGrounded;
+        previousStance = game.playerMovement.currentStance;
     }
 
     private void LockAndUnlockCursor()
@@ -101,7 +99,7 @@ public class PlayerLook : MonoBehaviour
 
     private void ApplyCameraFoV()
     {
-        if(playerInput.ZoomPressed())
+        if(game.playerInput.ZoomPressed())
         {
             cameraComponent.fieldOfView = Mathf.Lerp(cameraComponent.fieldOfView, cameraZoomedFoV, cameraZoomInRate * Time.deltaTime);
             cameraComponent.cullingMask |= 1 << LayerMask.NameToLayer("UnderWorld");
@@ -115,7 +113,7 @@ public class PlayerLook : MonoBehaviour
 
     private void ApplyGroundImpactShake()
     {
-        if ((characterController.isGrounded && !wasGrounded))
+        if ((game.characterController.isGrounded && !wasGrounded))
         {
             string[] animations = GroundImpactAnimations();
             string animation = animations[groundImpactAnimationIndex];
@@ -133,17 +131,17 @@ public class PlayerLook : MonoBehaviour
 
     private void ApplyStanceChangeShake()
     {
-        if (playerMovement.PlayerStanding() && !playerMovement.PlayerWasStanding(previousStance))
+        if (game.playerMovement.PlayerStanding() && !game.playerMovement.PlayerWasStanding(previousStance))
         {
             playerAnimator.CrossFade("CameraToStand", 0.4f, -1 );
         }
 
-        if (playerMovement.PlayerProne() && !playerMovement.PlayerWasProne(previousStance))
+        if (game.playerMovement.PlayerProne() && !game.playerMovement.PlayerWasProne(previousStance))
         {
             playerAnimator.CrossFade("CameraProneImpact", 0.4f, -1);
         }
 
-        if (playerMovement.PlayerCrouching() && playerMovement.PlayerWasStanding(previousStance))
+        if (game.playerMovement.PlayerCrouching() && game.playerMovement.PlayerWasStanding(previousStance))
         {
             playerAnimator.CrossFade("CameraStandToCrouch", 0.4f, -1);
         }

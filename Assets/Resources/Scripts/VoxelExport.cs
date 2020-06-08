@@ -13,6 +13,7 @@ public class VoxelExport : ScriptableObject
     public bool checkedForFloatingThisFrame;
     public GameObject gameObject;
     public Vector2 meshUV;
+    public int[] faceTriangleStartIndexes;
 
     public void Init(Vector3 _localPosition, Color _color, bool[] _drawFaces, int[] _adjacentVoxelExportIndexes, bool _isSeperated, bool _isAnchor, bool _isExposed, bool _checkedForFloatingThisFrame, GameObject _gameObject, Vector2 _meshUV)
     {
@@ -26,6 +27,7 @@ public class VoxelExport : ScriptableObject
         checkedForFloatingThisFrame = _checkedForFloatingThisFrame;
         gameObject = _gameObject;
         meshUV = _meshUV;
+        faceTriangleStartIndexes = new int[(int)(Voxel.Faces.SIZE)];
     }
 
     public static VoxelExport CreateInstance(Vector3 _localPosition, Color _color, bool[] _drawFaces, int[] _adjacentVoxelExportIndexes, bool _isSeperated, bool _isAnchor, bool _isExposed, bool _checkedForFloatingThisFrame, GameObject _gameObject, Vector2 _meshUV)

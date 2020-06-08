@@ -3,48 +3,37 @@ using UnityEngine;
 
 public class SeperatedVoxel : MonoBehaviour
 {
-    private GameObject player;
-    private Transform playerEye;
+    private Game game;
 
-    private Rigidbody rigidBody;
-    private BoxCollider boxCollider;
+    public Rigidbody rigidBody;
+    public MeshFilter meshFilter;
+    public MeshRenderer meshRenderer;
 
     private float triggeredMovementDuration;
-    private const float minTriggerSpeedSquared = 0.10f * 0.10f;
     private const float cameraGoalPositionUpOffset = -0.45f;
-    private static Vector3 triggeredMovementFinalScale = new Vector3(0.60f, 0.60f, 0.60f);
+    private Vector3 triggeredMovementFinalScale = new Vector3(0.60f, 0.60f, 0.60f);
 
-    [HideInInspector]
-    public bool canBeTriggered;
+    public bool active;
+    public bool triggered;
 
     void Start()
     {
-        gameObject.name = "SeperatedVoxel";
-        gameObject.layer = LayerMask.NameToLayer("SeperatedVoxel");
+        game = Game.GetGame();
 
-        player = GameObject.FindWithTag("Player");
-        playerEye = player.transform.Find("Eye");
+        rigidBody = gameObject.AddComponent<Rigidbody>();
+        rigidBody.Sleep();
 
-        rigidBody = GetComponent<Rigidbody>();
-        boxCollider = GetComponent<BoxCollider>();
+        meshFilter = gameObject.GetComponent<MeshFilter>();
+        meshRenderer = gameObject.GetComponent<MeshRenderer>();
+
+        Utility.VoxelCreateBoxCollider(gameObject);
 
         triggeredMovementDuration = Random.Range(0.30f, 0.55f);
     }
 
-    void Update()
-    {
-        if(rigidBody.velocity.sqrMagnitude <= minTriggerSpeedSquared)
-        {
-            canBeTriggered = true;
-            Destroy(rigidBody);
-
-            enabled = false;
-        }
-    }
-
     public IEnumerator TriggeredMovementToInventory()
     {
-        Destroy(boxCollider);
+        triggered = true;
 
         Vector3 originalScale = transform.localScale;
         Vector3 originalPosition = transform.position;
@@ -52,17 +41,29 @@ public class SeperatedVoxel : MonoBehaviour
 
         for (float fraction = 0.0f; fraction < 1.0f; fraction += Time.deltaTime / triggeredMovementDuration)
         {
-            transform.position = Vector3.Lerp(originalPosition, playerEye.transform.position + playerEye.transform.up * cameraGoalPositionUpOffset, fraction);
+            transform.position = Vector3.Lerp(originalPosition, game.playerEye.transform.position + game.playerEye.transform.up * cameraGoalPositionUpOffset, fraction);
 
-            transform.rotation = Quaternion.Lerp(originalRotation, Quaternion.Euler(player.transform.eulerAngles), fraction);
+            transform.rotation = Quaternion.Lerp(originalRotation, Quaternion.Euler(game.player.transform.eulerAngles), fraction);
 
             transform.localScale = Vector3.Lerp(originalScale, triggeredMovementFinalScale, fraction);
 
             yield return null;
         }
 
-        Destroy(this.gameObject);
+        SetInactive();
 
         yield return null;
+    }
+
+    private void SetInactive()
+    {
+        gameObject.transform.position = game.seperatedVoxelsParentTransform.position;
+        gameObject.transform.localScale = Vector3.one;
+
+        rigidBody.velocity = Vector3.zero;
+        rigidBody.Sleep();
+
+        triggered = false;
+        active = false;
     }
 }

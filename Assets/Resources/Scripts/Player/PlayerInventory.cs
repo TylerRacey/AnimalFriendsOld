@@ -7,6 +7,8 @@ using UnityEngine.UI;
 
 public class PlayerInventory : MonoBehaviour
 {
+    private Game game;
+
     private Dictionary<string, InventoryItem> inventoryItemTypes = new Dictionary<string, InventoryItem>();
 
     [HideInInspector]
@@ -14,13 +16,6 @@ public class PlayerInventory : MonoBehaviour
 
     [HideInInspector]
     public int selectedSlotIndex;
-
-    private GameObject player;
-    private PlayerInput playerInput;
-    private Transform playerEye;
-    private Transform mainCamera;
-    private Transform viewmodel;
-    private PlayerViewmodel viewmodelScript;
 
     private const int crosshairsWidth = 2;
     private const int crosshairsLength = 14;
@@ -49,18 +44,13 @@ public class PlayerInventory : MonoBehaviour
 
     private static float pickupItemDistance = 2.25f;
 
-    private static float pickupSeperatedVoxelDistance = 2.75f;
+    private const float pickupSeperatedVoxelDistance = 2.75f;
+    private const float pickSeperatedVoxelSpeedSquaredMin = 0.10f * 0.10f;
 
     // Start is called before the first frame update
     void Start()
     {
-        player = GameObject.FindWithTag("Player");
-        playerInput = player.GetComponent<PlayerInput>();
-        playerEye = player.transform.Find("Eye");
-
-        mainCamera = playerEye.Find("MainCamera");
-        viewmodel = mainCamera.Find("Viewmodel");
-        viewmodelScript = viewmodel.GetComponent<PlayerViewmodel>();
+        game = Game.GetGame();
 
         crosshairsTexture = new Texture2D(1, 1);
         crosshairsTexture.SetPixel(0, 0, new Color(0.85f, 0.85f, 0.85f, 0.75f));
@@ -118,11 +108,11 @@ public class PlayerInventory : MonoBehaviour
 
     private void UpdateSelectedSlotIndex()
     {
-        if (playerInput.ScrollToolbarRightPressed())
+        if (game.playerInput.ScrollToolbarRightPressed())
         {
             selectedSlotIndex = (int)Mathf.Repeat(selectedSlotIndex + 1, slotCount);
         }
-        else if (playerInput.ScrollToolbarLeftPressed())
+        else if (game.playerInput.ScrollToolbarLeftPressed())
         {
             selectedSlotIndex = (int)Mathf.Repeat(selectedSlotIndex - 1, slotCount);
         }
@@ -133,7 +123,7 @@ public class PlayerInventory : MonoBehaviour
     void OnGUI()
     {
         OnGUICrosshairs();
-        OnGUIToolbar();
+        //OnGUIToolbar();
 
         //GameObject[] allItems = Utility.GetAllItems();
         //foreach (GameObject item in allItems)
@@ -221,11 +211,11 @@ public class PlayerInventory : MonoBehaviour
 
     void UpdatePlayerItemPickup()
     {
-        if (!playerInput.UsePressed())
+        if (!game.playerInput.UsePressed())
             return;
 
         RaycastHit hit;
-        if (Physics.Raycast(playerEye.position, playerEye.forward, out hit, pickupItemDistance, LayerMask.GetMask("Item")))
+        if (Physics.Raycast(game.playerEye.position, game.playerEye.forward, out hit, pickupItemDistance, LayerMask.GetMask("Item")))
         {
             GameObject item = hit.collider.gameObject;
             Item itemScript = item.GetComponent<Item>();
@@ -235,13 +225,14 @@ public class PlayerInventory : MonoBehaviour
 
     void UpdatePlayerSeperatedVoxelPickup()
     {
-        Collider[] hitColliders = Physics.OverlapSphere(playerEye.position, pickupSeperatedVoxelDistance, LayerMask.GetMask("SeperatedVoxel"));
+        Collider[] hitColliders = Physics.OverlapSphere(game.playerEye.position, pickupSeperatedVoxelDistance, LayerMask.GetMask("SeperatedVoxel"));
         for (int index = 0; index < hitColliders.Length; index++)
         {
-            GameObject seperatedVoxel = hitColliders[index].gameObject;
-            SeperatedVoxel seperatedVoxelScript = seperatedVoxel.GetComponent<SeperatedVoxel>();
+            SeperatedVoxel seperatedVoxelScript;
+            if (!game.seperatedVoxels.TryGetValue(hitColliders[index].gameObject, out seperatedVoxelScript))
+                continue;
 
-            if (!seperatedVoxelScript.canBeTriggered)
+            if (!seperatedVoxelScript.active || seperatedVoxelScript.triggered || (seperatedVoxelScript.rigidBody.velocity.sqrMagnitude > pickSeperatedVoxelSpeedSquaredMin))
                 continue;
 
             seperatedVoxelScript.StartCoroutine(seperatedVoxelScript.TriggeredMovementToInventory());
