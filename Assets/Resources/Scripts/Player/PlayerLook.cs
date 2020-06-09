@@ -9,13 +9,8 @@ public class PlayerLook : MonoBehaviour
     private Camera cameraComponent;
     private Animator playerAnimator;
 
-    [SerializeField]
-    private Transform player, playerEye, mainCamera;
-
-    [SerializeField]
     private bool inverted = false;
 
-    [SerializeField]
     private float mouseSensitivity = 5.0f;
 
     private float mousePitchMin = -70.0f;
@@ -32,17 +27,14 @@ public class PlayerLook : MonoBehaviour
 
     private PlayerMovement.Stance previousStance;
 
-    void Awake()
+    // Start is called before the first frame update
+    void Start()
     {
         game = Game.GetGame();
 
         cameraComponent = game.mainCamera.GetComponent<Camera>();
         playerAnimator = game.mainCamera.GetComponent<Animator>();
-    }
 
-    // Start is called before the first frame update
-    void Start()
-    {
         Cursor.lockState = CursorLockMode.Locked;
     }
 
@@ -86,15 +78,15 @@ public class PlayerLook : MonoBehaviour
         Vector2 mouseInput = new Vector2(Input.GetAxis(MouseAxis.MOUSE_Y), Input.GetAxis(MouseAxis.MOUSE_X));
 
         float mousePitchAddition = (mouseInput.x * mouseSensitivity * invertValue());
-        float newMousePitch = AngleClamp180(playerEye.localEulerAngles.x + mousePitchAddition);
+        float newMousePitch = AngleClamp180(game.playerEye.localEulerAngles.x + mousePitchAddition);
         newMousePitch = Mathf.Clamp(newMousePitch, mousePitchMin, mousePitchMax);
 
-        playerEye.localEulerAngles = new Vector3(newMousePitch, playerEye.localEulerAngles.y, playerEye.localEulerAngles.z);
+        game.playerEye.localEulerAngles = new Vector3(newMousePitch, game.playerEye.localEulerAngles.y, game.playerEye.localEulerAngles.z);
 
         float mouseYawAddition = (mouseInput.y * mouseSensitivity);
-        float newMouseYaw = AngleClamp180(player.localEulerAngles.y + mouseYawAddition);
+        float newMouseYaw = AngleClamp180(game.player.transform.localEulerAngles.y + mouseYawAddition);
 
-        player.localEulerAngles = new Vector3(player.localEulerAngles.x, newMouseYaw, player.localEulerAngles.z);
+        game.player.transform.localEulerAngles = new Vector3(game.player.transform.localEulerAngles.x, newMouseYaw, game.player.transform.localEulerAngles.z);
     }
 
     private void ApplyCameraFoV()

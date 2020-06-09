@@ -174,17 +174,18 @@ public static class Utility
         return new int[] { (int)Voxel.Faces.BACK, (int)Voxel.Faces.LEFT, (int)Voxel.Faces.BOTTOM, (int)Voxel.Faces.RIGHT, (int)Voxel.Faces.TOP, (int)Voxel.Faces.FRONT };
     }  
 
-    public static void ScaleBoxColliderBoundsToVoxelStructs(BoxCollider boxCollider, List<VoxelStruct> voxelStructs)
+    public static void ScaleBoxColliderBoundsToVoxelStructs(BoxCollider boxCollider, HashSet<VoxelStruct> voxelStructs)
     {
-        // Build Parent Box Collider From Voxel Colliders
         Bounds newBounds = new Bounds(Vector3.zero, Vector3.zero);
-        for (int voxelIndex = 0; voxelIndex < voxelStructs.Count; voxelIndex++)
+        Bounds voxelBounds = new Bounds();
+        Vector3 up = boxCollider.transform.up;
+        Vector3 right = boxCollider.transform.right;
+        Vector3 forward = boxCollider.transform.forward;
+        Vector3 voxelSize = new Vector3(Voxel.SIZE, Voxel.SIZE, Voxel.SIZE);
+        foreach (VoxelStruct voxelStruct in voxelStructs)
         {
-            Vector3 voxelCenter = voxelStructs[voxelIndex].localPosition + boxCollider.transform.up * Voxel.SIZE * 0.5f + boxCollider.transform.right * Voxel.SIZE * 0.5f + boxCollider.transform.forward * Voxel.SIZE * 0.5f;
-
-            Bounds voxelBounds = new Bounds();
-            voxelBounds.size = new Vector3(Voxel.SIZE, Voxel.SIZE, Voxel.SIZE);
-            voxelBounds.center = voxelCenter;
+            voxelBounds.size = voxelSize;
+            voxelBounds.center = voxelStruct.localPosition + up * Voxel.SIZE * 0.5f + right * Voxel.SIZE * 0.5f + forward * Voxel.SIZE * 0.5f;
 
             newBounds.Encapsulate(voxelBounds);
         }

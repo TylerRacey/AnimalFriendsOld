@@ -45,7 +45,7 @@ public class PlayerInventory : MonoBehaviour
     private static float pickupItemDistance = 2.25f;
 
     private const float pickupSeperatedVoxelDistance = 2.75f;
-    private const float pickSeperatedVoxelSpeedSquaredMin = 0.10f * 0.10f;
+    private const float pickSeperatedVoxelSpeedSquaredMin = 0.01f * 0.01f;
 
     // Start is called before the first frame update
     void Start()
@@ -229,10 +229,10 @@ public class PlayerInventory : MonoBehaviour
         for (int index = 0; index < hitColliders.Length; index++)
         {
             SeperatedVoxel seperatedVoxelScript;
-            if (!game.seperatedVoxels.TryGetValue(hitColliders[index].gameObject, out seperatedVoxelScript))
+            if (!game.seperatedVoxelDictionaries.TryGetValue(hitColliders[index].gameObject, out seperatedVoxelScript))
                 continue;
 
-            if (!seperatedVoxelScript.active || seperatedVoxelScript.triggered || (seperatedVoxelScript.rigidBody.velocity.sqrMagnitude > pickSeperatedVoxelSpeedSquaredMin))
+            if (!seperatedVoxelScript.active || seperatedVoxelScript.triggered || !seperatedVoxelScript.canBeTriggered || (seperatedVoxelScript.rigidBody.velocity.sqrMagnitude > pickSeperatedVoxelSpeedSquaredMin))
                 continue;
 
             seperatedVoxelScript.StartCoroutine(seperatedVoxelScript.TriggeredMovementToInventory());

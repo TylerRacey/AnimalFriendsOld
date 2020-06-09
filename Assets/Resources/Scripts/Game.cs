@@ -30,9 +30,13 @@ public class Game : MonoBehaviour
     [HideInInspector]
     public Transform destructibleVoxelsParentTransform;
     [HideInInspector]
-    public Dictionary<GameObject, SeperatedVoxel> seperatedVoxels = new Dictionary<GameObject, SeperatedVoxel>();
+    public Dictionary<GameObject, SeperatedVoxel> seperatedVoxelDictionaries = new Dictionary<GameObject, SeperatedVoxel>();
     [HideInInspector]
-    public Dictionary<GameObject, DestructibleVoxel> destructibleVoxels = new Dictionary<GameObject, DestructibleVoxel>();
+    public Dictionary<GameObject, DestructibleVoxel> destructibleVoxelDictionaries = new Dictionary<GameObject, DestructibleVoxel>();
+    [HideInInspector]
+    public List<SeperatedVoxel> seperatedVoxels = new List<SeperatedVoxel>();
+    [HideInInspector]
+    public List<DestructibleVoxel> destructibleVoxels = new List<DestructibleVoxel>();
 
     private const int seperatedVoxelMaxCount = 1000;
     private Mesh seperatedVoxelMesh;
@@ -56,7 +60,8 @@ public class Game : MonoBehaviour
         {
             GameObject seperatedVoxelGameObject = GenerateSeperatedVoxel();
             SeperatedVoxel seperatedVoxel = seperatedVoxelGameObject.AddComponent<SeperatedVoxel>();
-            seperatedVoxels.Add(seperatedVoxelGameObject, seperatedVoxel);
+            seperatedVoxelDictionaries.Add(seperatedVoxelGameObject, seperatedVoxel);
+            seperatedVoxels.Add(seperatedVoxel);
         }
 
         destructibleVoxelsParentTransform = GameObject.Find("DestructibleVoxelsParent").transform;
@@ -64,7 +69,8 @@ public class Game : MonoBehaviour
         {
             GameObject destructibleVoxelGameObject = GenerateDestructibleVoxel();
             DestructibleVoxel destructibleVoxel = destructibleVoxelGameObject.AddComponent<DestructibleVoxel>();
-            destructibleVoxels.Add(destructibleVoxelGameObject, destructibleVoxel);
+            destructibleVoxelDictionaries.Add(destructibleVoxelGameObject, destructibleVoxel);
+            destructibleVoxels.Add(destructibleVoxel);
         }
 
         GameObject[] gameObjectsToDestroy = GameObject.FindGameObjectsWithTag("Destroy");

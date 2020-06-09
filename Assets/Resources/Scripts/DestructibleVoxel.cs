@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using UnityEngine;
+using UnityEngine.UIElements;
 
 public class DestructibleVoxel : MonoBehaviour
 {
@@ -11,19 +12,45 @@ public class DestructibleVoxel : MonoBehaviour
     public VoxelStruct voxelStruct;
     public Destructible destructible;
 
+    private Transform destructibleVoxelsParentTransform;
+    private Transform voxelTransform;
+
     void Start()
     {
         game = Game.GetGame();
+        voxelTransform = transform;
+
+        destructibleVoxelsParentTransform = game.destructibleVoxelsParentTransform;
 
         boxCollider = Utility.VoxelCreateBoxCollider(gameObject);
     }
 
+    public void SetActive(VoxelStruct parentVoxelStruct, Destructible parentDestructible)
+    {
+        Transform parentTransform = parentDestructible.transform;
+        voxelTransform.position = parentTransform.TransformPoint(parentVoxelStruct.localPosition);
+        voxelTransform.rotation = parentTransform.rotation;
+        if (parentVoxelStruct != null)
+        {
+            parentVoxelStruct.destructibleVoxel = null;
+        }
+
+        voxelStruct = parentVoxelStruct;
+        destructible = parentDestructible;
+        voxelStruct.destructibleVoxel = this;
+        active = true;
+    }
+
     public void SetInactive()
     {
-        gameObject.transform.position = game.destructibleVoxelsParentTransform.position;
+        voxelTransform.position = destructibleVoxelsParentTransform.position;
 
-        active = false;
         destructible = null;
-        voxelStruct.destructibleVoxel = null;
+        if (voxelStruct != null)
+        {
+            voxelStruct.destructibleVoxel = null;
+        }
+        voxelStruct = null;
+        active = false;
     }
 }
