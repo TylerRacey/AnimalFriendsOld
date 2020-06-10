@@ -126,7 +126,7 @@ public class MeshToVoxelGameObjects : EditorWindow
         Vector3 up = selectedGameObject.transform.up;
         Vector3 forward = selectedGameObject.transform.forward;
         Vector3 bottomLeftPointOfCollider = center + (right * -rightSize * 0.5f) + (up * -upSize * 0.5f) + (forward * -forwardSize * 0.5f);
-        Vector3 bottomLeftPointOfColliderVoxelCentered = bottomLeftPointOfCollider + (right * 0.5f * Voxel.SIZE) + (up * 0.5f * Voxel.SIZE) - (forward * 0.5f * Voxel.SIZE);
+        Vector3 bottomLeftPointOfColliderVoxelCentered = bottomLeftPointOfCollider + (right * Voxel.HALF_SIZE) + (up * Voxel.HALF_SIZE) - (forward * Voxel.HALF_SIZE);
 
         int rightVoxelCount = (int)Mathf.Max((rightSize / Voxel.SIZE), 1);
         int upVoxelCount = (int)Mathf.Max((upSize / Voxel.SIZE), 1);
@@ -154,7 +154,7 @@ public class MeshToVoxelGameObjects : EditorWindow
 
                         insideMesh = !insideMesh;
 
-                        Vector3 voxelPosition = pointA - (right * Voxel.SIZE * 0.5f) - (up * Voxel.SIZE * 0.5f) + (forward * 0.5f * Voxel.SIZE);
+                        Vector3 voxelPosition = pointA - (right * Voxel.HALF_SIZE) - (up * Voxel.HALF_SIZE) + (forward * Voxel.HALF_SIZE);
                         // GameObject sphere = Utility.DebugDrawSphere(raycastHit.point, 0.01f, new Color(1, 0, 0), 10);
                         //GameObject sphere = Utility.DebugDrawSphere(voxelPosition, 0.01f, new Color(1, 0, 0), 10);
                         //sphere.transform.SetParent(newGameObject.transform);
@@ -162,7 +162,7 @@ public class MeshToVoxelGameObjects : EditorWindow
 
                     if (insideMesh)
                     {
-                        Vector3 voxelPosition = pointA - (right * Voxel.SIZE * 0.5f) - (up * Voxel.SIZE * 0.5f);
+                        Vector3 voxelPosition = pointA - (right * Voxel.HALF_SIZE) - (up * Voxel.HALF_SIZE);
                         VoxelStruct voxelStruct = new VoxelStruct(voxelPosition, forward, right, up, material);
                         voxelStructs.Add(voxelStruct);
                     }

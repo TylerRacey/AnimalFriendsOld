@@ -28,6 +28,7 @@ public static class Voxel
     public const int FACE_QUAD_VERTICES = 4;
     public const int FACE_TRIANGLES_VERTICES = 6;
     public const float SIZE = 0.10f;
+    public const float HALF_SIZE = SIZE * 0.5f;
 }
 
 public class Axis
@@ -61,6 +62,7 @@ public class VoxelStruct
     public Color color;
     public int[] faceTriangleStartIndexes;
     public DestructibleVoxel destructibleVoxel;
+    public Vector3 launchDirection;
 
     public VoxelStruct(Vector3 _localPosition, bool[] _drawFaces, bool _isSeperated, bool _isAnchor, bool _isExposed, bool _checkedForFloatingThisFrame, Vector2 _meshUV, VoxelStruct[] _adjacentVoxelStructs, Color _color, int[] _faceTriangleStartIndexes, DestructibleVoxel _destructibleVoxel)
     {

@@ -209,7 +209,7 @@ public class VoxelGameObjectToDestructiblePrefab : EditorWindow
         {
             GameObject voxel = generatedVoxels[voxelIndex];
 
-            Vector3 voxelCenter = voxel.transform.localPosition + voxel.transform.up * Voxel.SIZE * 0.5f + voxel.transform.right * Voxel.SIZE * 0.5f + voxel.transform.forward * Voxel.SIZE * 0.5f;
+            Vector3 voxelCenter = voxel.transform.localPosition + voxel.transform.up * Voxel.HALF_SIZE + voxel.transform.right * Voxel.HALF_SIZE + voxel.transform.forward * Voxel.HALF_SIZE;
 
             Bounds voxelBounds = new Bounds();
             voxelBounds.size = new Vector3(Voxel.SIZE, Voxel.SIZE, Voxel.SIZE);

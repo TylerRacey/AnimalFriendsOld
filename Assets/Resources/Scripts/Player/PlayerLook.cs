@@ -94,12 +94,10 @@ public class PlayerLook : MonoBehaviour
         if(game.playerInput.ZoomPressed())
         {
             cameraComponent.fieldOfView = Mathf.Lerp(cameraComponent.fieldOfView, cameraZoomedFoV, cameraZoomInRate * Time.deltaTime);
-            cameraComponent.cullingMask |= 1 << LayerMask.NameToLayer("UnderWorld");
         }
         else
         {
             cameraComponent.fieldOfView = Mathf.Lerp(cameraComponent.fieldOfView, cameraDefaultFoV, cameraZoomOutRate * Time.deltaTime);
-            cameraComponent.cullingMask &= ~(1 << LayerMask.NameToLayer("UnderWorld"));
         }
     }
 

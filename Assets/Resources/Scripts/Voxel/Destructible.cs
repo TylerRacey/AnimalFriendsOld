@@ -13,6 +13,7 @@ public class Destructible : MonoBehaviour
     private List<DestructibleVoxel> destructibleVoxels;
     private List<SeperatedVoxel> seperatedVoxels;
 
+    private Transform destructibleTransform;
     private BoxCollider boxCollider;
     private Mesh mesh;
     private Material material;
@@ -43,12 +44,13 @@ public class Destructible : MonoBehaviour
         seperatedVoxels = game.seperatedVoxels;
 
         Physics.IgnoreLayerCollision(LayerMask.NameToLayer("Destructible"), LayerMask.NameToLayer("SeperatedVoxel"));
-   
+
+        destructibleTransform = transform;
         boxCollider = GetComponent<BoxCollider>();
         mesh = GetComponent<MeshFilter>().mesh;
         material = GetComponent<MeshRenderer>().material;
 
-        destructibleCenterFlattened = new Vector3(transform.position.x, 0, transform.position.z);
+        destructibleCenterFlattened = new Vector3(destructibleTransform.position.x, 0, destructibleTransform.position.z);
 
         // Copy Voxel Render Imports And Setup Lists
         for (int index = 0; index < voxelExports.Count; index++)
@@ -66,6 +68,9 @@ public class Destructible : MonoBehaviour
                 anchorVoxelStructs.Add(voxelStruct);
                 minVoxelCount++;
             }
+
+            Vector3 voxelStructCenterPosition = destructibleTransform.TransformPoint(voxelExport.localPosition) + destructibleTransform.up * Voxel.HALF_SIZE + destructibleTransform.right * Voxel.HALF_SIZE + destructibleTransform.forward * Voxel.HALF_SIZE;
+            voxelStruct.launchDirection = Vector3.Normalize(new Vector3(voxelStructCenterPosition.x - destructibleCenterFlattened.x, 0, voxelStructCenterPosition.z - destructibleCenterFlattened.z));
 
             voxelStructs.Add(voxelStruct);
         }
@@ -174,16 +179,15 @@ public class Destructible : MonoBehaviour
                 }
             }
 
-            Vector3 launchForward = Vector3.Normalize(new Vector3(hitDestructibleVoxel.boxCollider.bounds.center.x - destructibleCenterFlattened.x, 0, hitDestructibleVoxel.boxCollider.bounds.center.z - destructibleCenterFlattened.z));
-
             SeperateVoxelStruct(hitVoxelStruct);
 
             // Teleport and launch first available seperated voxel
+            Vector3 launchForward = Vector3.Normalize(hitVoxelStruct.launchDirection + playerTransform.forward);
             Vector3 launchRight = Vector3.Cross(launchForward, Vector3.up);
             Vector3 launchVector = Vector3.zero;
             launchVector += launchForward * Random.Range(200, 250);
-            launchVector += launchRight * Random.Range(-150, 150);
-            launchVector += Vector3.up * Random.Range(-150, 150);
+            launchVector += launchRight * Random.Range(150, 200) * Utility.RandomSign();
+            launchVector += Vector3.up * Random.Range(100, 150) * Utility.RandomSign();
             while (seperatedVoxelIndex < seperatedVoxels.Count)
             {
                 SeperatedVoxel seperatedVoxel = seperatedVoxels[seperatedVoxelIndex];
@@ -194,7 +198,7 @@ public class Destructible : MonoBehaviour
                     continue;
 
                 seperatedVoxel.SetActive(hitVoxelStruct, this);
-                seperatedVoxel.rigidBody.AddForce(launchVector);
+                seperatedVoxel.rigidBody.AddForce(GetVoxelStructLaunchForce(hitVoxelStruct));
 
                 break;
             }
@@ -204,7 +208,7 @@ public class Destructible : MonoBehaviour
 
         UpdateMesh();
 
-        Utility.ScaleBoxColliderBoundsToVoxelStructs(boxCollider, exposedVoxelStructs);
+        Utility.ScaleBoxColliderBoundsToVoxelStructs(boxCollider, exposedVoxelStructs, destructibleTransform);
     }
 
     private Vector3 FindHitVoxelContactPosition(Vector3 hitPosition)
@@ -313,7 +317,7 @@ public class Destructible : MonoBehaviour
                         continue;
 
                     seperatedVoxel.SetActive(voxelStruct, this);
-                    seperatedVoxel.rigidBody.velocity = playerTransform.forward * 2.0f;
+                    seperatedVoxel.rigidBody.AddForce(GetVoxelStructLaunchForce(voxelStruct));
 
                     break;
                 }
@@ -335,20 +339,11 @@ public class Destructible : MonoBehaviour
                 {
                     SeperateVoxelStruct(voxelStruct);
                 }
+            }
 
-                while (seperatedVoxelIndex < seperatedVoxels.Count)
-                {
-                    SeperatedVoxel seperatedVoxel = seperatedVoxels[seperatedVoxelIndex];
-                    seperatedVoxelIndex++;
-
-                    if (seperatedVoxel.active)
-                        continue;
-
-                    seperatedVoxel.SetActive(voxelStruct, this);
-                    seperatedVoxel.rigidBody.velocity = playerTransform.forward * 2.0f;
-
-                    break;
-                }
+            if (floatingVoxelStructs.Count > 0)
+            {
+                FloatingVoxelChunk.CreateFloatingVoxelChunk(destructibleTransform, mesh, material, floatingVoxelStructs);
             }
 
             if (voxelStructs.Count == 0)
@@ -380,5 +375,17 @@ public class Destructible : MonoBehaviour
 
             FloodFillVoxelStruct(adjacentVoxelStruct);
         }
+    }
+
+    private Vector3 GetVoxelStructLaunchForce(VoxelStruct voxelStruct)
+    {
+        Vector3 launchForward = Vector3.Normalize(voxelStruct.launchDirection + playerTransform.forward);
+        Vector3 launchRight = Vector3.Cross(launchForward, Vector3.up);
+        Vector3 launchVector = Vector3.zero;
+        launchVector += launchForward * Random.Range(200, 250);
+        launchVector += launchRight * Random.Range(150, 200) * Utility.RandomSign();
+        launchVector += Vector3.up * Random.Range(100, 150) * Utility.RandomSign();
+
+        return launchVector;
     }
 }

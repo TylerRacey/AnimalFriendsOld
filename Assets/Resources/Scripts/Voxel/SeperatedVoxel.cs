@@ -8,15 +8,18 @@ public class SeperatedVoxel : MonoBehaviour
     public Rigidbody rigidBody;
     private Material material;
 
+    public const float pickSpeedMinSquared = 0.10f * 0.10f;
+
     private float triggeredMovementDuration;
     private const float cameraGoalPositionUpOffset = -0.45f;
     private Vector3 triggeredMovementFinalScale = new Vector3(0.60f, 0.60f, 0.60f);
 
-    private float canBeTriggeredDelay;
-
     public bool active;
     public bool triggered;
-    public bool canBeTriggered = true;
+    public bool hasHadEnoughVelocity;
+
+    private float hasHadEnoughVelocityTimeoutDelay;
+    private float hasHadEnoughVelocityTimeout = 0.0f;
 
     private Transform seperatedVoxelsParentTransform;
     private Transform voxelTransform;
@@ -41,7 +44,15 @@ public class SeperatedVoxel : MonoBehaviour
         Utility.VoxelCreateBoxCollider(gameObject);
 
         triggeredMovementDuration = Random.Range(0.30f, 0.55f);
-        canBeTriggeredDelay = Random.Range(0.05f, 0.35f);
+        hasHadEnoughVelocityTimeoutDelay = Random.Range(0.10f, 0.20f);
+    }
+
+    private void Update()
+    {
+        if (active && ((Time.time >= hasHadEnoughVelocityTimeout) || (!hasHadEnoughVelocity && rigidBody.velocity.sqrMagnitude >= pickSpeedMinSquared)))
+        {
+            hasHadEnoughVelocity = true;
+        }
     }
 
     public IEnumerator TriggeredMovementToInventory()
@@ -79,16 +90,7 @@ public class SeperatedVoxel : MonoBehaviour
 
         rigidBody = gameObject.AddComponent<Rigidbody>();
 
-        // StartCoroutine(CanBeTriggeredLogic());
-    }
-
-    private IEnumerator CanBeTriggeredLogic()
-    {
-        canBeTriggered = false;
-
-        yield return new WaitForSeconds(canBeTriggeredDelay);
-
-        canBeTriggered = true;
+        hasHadEnoughVelocityTimeout = Time.time + hasHadEnoughVelocityTimeoutDelay;
     }
 
     private void SetInactive()
@@ -98,6 +100,7 @@ public class SeperatedVoxel : MonoBehaviour
         voxelTransform.position = seperatedVoxelsParentTransform.position;
         voxelTransform.localScale = Vector3.one;
 
+        hasHadEnoughVelocity = false;
         active = false;
         triggered = false;
     }
