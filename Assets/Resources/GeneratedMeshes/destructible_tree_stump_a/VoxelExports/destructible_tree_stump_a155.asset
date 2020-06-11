@@ -9,9 +9,9 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 83e0b0593ab68d84a8f9b5ca2b8c8020, type: 3}
+  m_Script: {fileID: 0}
   m_Name: destructible_tree_stump_a155
-  m_EditorClassIdentifier: 
+  m_EditorClassIdentifier: Assembly-CSharp::VoxelExport
   localPosition: {x: -0.099999905, y: 0, z: -0.45000017}
   color: {r: 0.32941177, g: 0.19607843, b: 0, a: 1}
   drawFaces: 000000000000
@@ -23,3 +23,4 @@ MonoBehaviour:
   gameObject: {fileID: 0}
   meshUV: {x: 0.1, y: 0}
   faceTriangleStartIndexes: 880e00008c0e0000900e0000940e0000980e00009c0e0000
+  voxelIndex: 155

@@ -59,6 +59,7 @@ public class VoxelGameObjectToDestructiblePrefab : EditorWindow
         newGameObject.transform.localRotation = selectedGameObject.transform.localRotation;
         newGameObject.transform.localScale = selectedGameObject.transform.localScale;
         newGameObject.layer = LayerMask.NameToLayer("Destructible");
+        Destructible destructible = newGameObject.AddComponent<Destructible>();
 
         Transform[] allChildren = selectedGameObject.GetComponentsInChildren<Transform>();
         List<GameObject> voxels = new List<GameObject>();
@@ -131,7 +132,7 @@ public class VoxelGameObjectToDestructiblePrefab : EditorWindow
             Material voxelMaterial = voxel.GetComponent<MeshRenderer>().sharedMaterial;
             Color voxelColor = voxel.GetComponent<MeshRenderer>().sharedMaterial.color;
             Vector2 voxelMeshUVs = new Vector2((voxelColors.IndexOf(voxelColor) / (float)voxelColors.Count) + (0.5f / voxelColors.Count), 0);
-            VoxelExport voxelExport = VoxelExport.CreateInstance(voxel.transform.localPosition, voxelColor, drawFaces, null, false, isAnchor, isExposed, false, null, voxelMeshUVs);
+            VoxelExport voxelExport = VoxelExport.CreateInstance(voxel.transform.localPosition, voxelColor, drawFaces, null, false, isAnchor, isExposed, false, null, voxelMeshUVs, voxels.IndexOf(voxel));
 
             // Create Temp GameObject Voxel
             GameObject generatedVoxel = GenerateVoxelGameObjectFromVoxelExport(voxelExport, selectedGameObject.transform);
@@ -438,7 +439,6 @@ public class VoxelGameObjectToDestructiblePrefab : EditorWindow
         AssetDatabase.Refresh();
         EditorUtility.FocusProjectWindow();
 
-        Destructible destructible = newGameObject.AddComponent<Destructible>();
         destructible.voxelExports = voxelExports;
 
         string assetFolderPath = assetsFolderPath + "/" + meshName + "/";

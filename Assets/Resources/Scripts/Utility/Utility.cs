@@ -174,7 +174,7 @@ public static class Utility
         return new int[] { (int)Voxel.Faces.BACK, (int)Voxel.Faces.LEFT, (int)Voxel.Faces.BOTTOM, (int)Voxel.Faces.RIGHT, (int)Voxel.Faces.TOP, (int)Voxel.Faces.FRONT };
     }  
 
-    public static void ScaleBoxColliderBoundsToVoxelStructs(BoxCollider boxCollider, HashSet<VoxelStruct> voxelStructs, Transform parentTransform)
+    public static void ScaleBoxColliderBoundsToVoxelStructs(BoxCollider boxCollider, List<VoxelStruct> voxelStructs, Transform parentTransform)
     {
         // Find Voxels On Edge To Encapsulate Smallest Number Of Voxels
         Vector3 voxelLocalPosition;
@@ -187,6 +187,12 @@ public static class Utility
 
         foreach (VoxelStruct voxelStruct in voxelStructs)
         {
+            if (voxelStruct.isSeperated)
+                continue;
+
+            if (!voxelStruct.isExposed)
+                continue;
+
             voxelLocalPosition = voxelStruct.localPosition;
             if (voxelLocalPosition.x < smallestX.x)
                 smallestX = voxelLocalPosition;
@@ -208,14 +214,14 @@ public static class Utility
         }
 
         // Encapsulate edge voxels' Bounds
-        Bounds newBounds = new Bounds(Vector3.zero, Vector3.zero);
-        Bounds voxelBounds = new Bounds();
         Vector3 up = parentTransform.up;
         Vector3 right = parentTransform.right;
         Vector3 forward = parentTransform.forward;
         Vector3 voxelSize = new Vector3(Voxel.SIZE, Voxel.SIZE, Voxel.SIZE);
         Vector3[] encapsulateLocalPositions = new Vector3[] { smallestX, largestX, smallestY, largestY, smallestZ, largestZ };
-        for(int index = 0; index < encapsulateLocalPositions.Length; index++)
+        Bounds newBounds = new Bounds(encapsulateLocalPositions[0], voxelSize);
+        Bounds voxelBounds = new Bounds();
+        for (int index = 0; index < encapsulateLocalPositions.Length; index++)
         {
             voxelBounds.size = voxelSize;
             voxelBounds.center = encapsulateLocalPositions[index] + up * Voxel.HALF_SIZE + right * Voxel.HALF_SIZE + forward * Voxel.HALF_SIZE;
@@ -224,7 +230,7 @@ public static class Utility
         }
 
         boxCollider.center = newBounds.center;
-        boxCollider.size = newBounds.size;
+        boxCollider.size = new Vector3(newBounds.size.x, newBounds.size.y, newBounds.size.z);
     }
 
     public static BoxCollider VoxelCreateBoxCollider(GameObject voxel)
@@ -236,8 +242,15 @@ public static class Utility
         return boxCollider;
     }
 
-    public static Mesh CreateMeshFromVoxelStruct(VoxelStruct voxelStruct)
+    public static GameObject CreateGameObjectFromVoxelStruct(VoxelStruct voxelStruct, Transform parentTransform)
     {
+        GameObject voxel = new GameObject("voxel");
+        voxel.transform.localPosition = parentTransform.TransformPoint(voxelStruct.localPosition);
+        voxel.transform.rotation = parentTransform.rotation;
+
+        voxel.AddComponent<MeshRenderer>().material = new Material(Shader.Find("Standard"));
+        voxel.GetComponent<MeshRenderer>().material.color = voxelStruct.color;
+
         List<int> triangles = new List<int>();
         List<Vector3> vertices = new List<Vector3>();
         List<Vector3> normals = new List<Vector3>();
@@ -386,7 +399,9 @@ public static class Utility
         }
         mesh.uv = uvs;
 
-        return mesh;
+        voxel.AddComponent<MeshFilter>().mesh = mesh;
+
+        return voxel;
     }
 
     public static int RandomSign()
@@ -396,5 +411,27 @@ public static class Utility
             return -1;
         }
         return 1;
+    }
+
+    public static bool[] CopyArray(bool[] originalArray)
+    {
+        bool[] newArray = new bool[originalArray.Length];
+        for (int index = 0; index < originalArray.Length; index++)
+        {
+            newArray[index] = originalArray[index];
+        }
+
+        return newArray;
+    }
+
+    public static int[] CopyArray(int[] originalArray)
+    {
+        int[] newArray = new int[originalArray.Length];
+        for (int index = 0; index < originalArray.Length; index++)
+        {
+            newArray[index] = originalArray[index];
+        }
+
+        return newArray;
     }
 }

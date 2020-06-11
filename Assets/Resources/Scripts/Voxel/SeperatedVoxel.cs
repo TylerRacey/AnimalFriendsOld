@@ -78,13 +78,12 @@ public class SeperatedVoxel : MonoBehaviour
         yield return null;
     }
 
-    public void SetActive(VoxelStruct voxelStruct, Destructible parentDestructible)
+    public void SetActive(VoxelStruct voxelStruct, Transform parentTransform)
     {
         active = true;
 
-        Transform parentDestructibleTransform = parentDestructible.transform;
-        voxelTransform.position = parentDestructibleTransform.TransformPoint(voxelStruct.localPosition);
-        voxelTransform.rotation = parentDestructibleTransform.rotation;
+        voxelTransform.position = parentTransform.TransformPoint(voxelStruct.localPosition);
+        voxelTransform.rotation = parentTransform.rotation;
 
         material.color = voxelStruct.color;
 

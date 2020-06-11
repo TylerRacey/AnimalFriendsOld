@@ -58,9 +58,6 @@ public class PlayerMovement : MonoBehaviour
     {
         game = Game.GetGame();
 
-        Physics.IgnoreLayerCollision(LayerMask.NameToLayer("Player"), LayerMask.NameToLayer("DestructibleVoxel"));
-        Physics.IgnoreLayerCollision(LayerMask.NameToLayer("Player"), LayerMask.NameToLayer("SeperatedVoxel"));
-
         PlayerStanceSetStand();
     }
 

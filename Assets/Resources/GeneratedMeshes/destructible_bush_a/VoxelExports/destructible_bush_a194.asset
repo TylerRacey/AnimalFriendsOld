@@ -9,9 +9,9 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 83e0b0593ab68d84a8f9b5ca2b8c8020, type: 3}
+  m_Script: {fileID: 0}
   m_Name: destructible_bush_a194
-  m_EditorClassIdentifier: 
+  m_EditorClassIdentifier: Assembly-CSharp::VoxelExport
   localPosition: {x: 0.099999905, y: 0.5, z: 0.049999893}
   color: {r: 0.102171585, g: 0.5283019, b: 0.14017043, a: 1}
   drawFaces: 000000000000
@@ -23,3 +23,4 @@ MonoBehaviour:
   gameObject: {fileID: 0}
   meshUV: {x: 0.3, y: 0}
   faceTriangleStartIndexes: 3012000034120000381200003c1200004012000044120000
+  voxelIndex: 194

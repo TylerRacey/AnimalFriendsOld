@@ -21,8 +21,8 @@ public class Destructible : MonoBehaviour
     public List<VoxelExport> voxelExports = new List<VoxelExport>();
     private List<VoxelStruct> voxelStructs = new List<VoxelStruct>();
     private HashSet<VoxelStruct> anchorVoxelStructs = new HashSet<VoxelStruct>();
-    private HashSet<VoxelStruct> exposedVoxelStructs = new HashSet<VoxelStruct>();
     private HashSet<VoxelStruct> floatingVoxelStructs = new HashSet<VoxelStruct>();
+    private int remainingVoxelStructCount;
 
     private List<int> meshTriangles = new List<int>();
 
@@ -43,10 +43,9 @@ public class Destructible : MonoBehaviour
         destructibleVoxels = game.destructibleVoxels;
         seperatedVoxels = game.seperatedVoxels;
 
-        Physics.IgnoreLayerCollision(LayerMask.NameToLayer("Destructible"), LayerMask.NameToLayer("SeperatedVoxel"));
-
         destructibleTransform = transform;
         boxCollider = GetComponent<BoxCollider>();
+
         mesh = GetComponent<MeshFilter>().mesh;
         material = GetComponent<MeshRenderer>().material;
 
@@ -56,12 +55,7 @@ public class Destructible : MonoBehaviour
         for (int index = 0; index < voxelExports.Count; index++)
         {
             VoxelExport voxelExport = voxelExports[index];
-            VoxelStruct voxelStruct = new VoxelStruct(voxelExport.localPosition, voxelExport.drawFaces, voxelExport.isSeperated, voxelExport.isAnchor, voxelExport.isExposed, false, voxelExport.meshUV, new VoxelStruct[(int)Voxel.Faces.SIZE], voxelExport.color, voxelExport.faceTriangleStartIndexes, null);
-
-            if (voxelStruct.isExposed)
-            {
-                exposedVoxelStructs.Add(voxelStruct);
-            }
+            VoxelStruct voxelStruct = new VoxelStruct(voxelExport.localPosition, voxelExport.drawFaces, voxelExport.isSeperated, voxelExport.isAnchor, voxelExport.isExposed, false, voxelExport.meshUV, new VoxelStruct[(int)Voxel.Faces.SIZE], voxelExport.color, voxelExport.faceTriangleStartIndexes, voxelExport.voxelIndex, this);
 
             if (voxelStruct.isAnchor)
             {
@@ -89,7 +83,7 @@ public class Destructible : MonoBehaviour
                 int adjacentIndex = voxelExportIndexes[faceIndex];
                 if (adjacentIndex == -1)
                 {
-                    voxelStruct.adjacentVoxelStructs[faceIndex] = default(VoxelStruct);
+                    voxelStruct.adjacentVoxelStructs[faceIndex] = null;
                 }
                 else
                 {
@@ -98,18 +92,23 @@ public class Destructible : MonoBehaviour
             }
         }
 
+        remainingVoxelStructCount = voxelStructs.Count;
         minVoxelCount = (int)(minVoxelCount * minVoxelCountAnchorScalar);
-
-        voxelExports = null;
     }
 
     public void AssignDestructibleVoxels()
     {
         // Assign DestructibleVoxel to ExposedStructs
         int destructibleVoxelIndex = 0;
-        foreach (VoxelStruct exposedVoxelStruct in exposedVoxelStructs)
+        foreach (VoxelStruct voxelStruct in voxelStructs)
         {
-            if (exposedVoxelStruct.destructibleVoxel != null && exposedVoxelStruct.destructibleVoxel.destructible == this)
+            if (voxelStruct.isSeperated)
+                continue;
+
+            if (!voxelStruct.isExposed)
+                continue;
+
+            if (voxelStruct.destructibleVoxel != null && voxelStruct.destructibleVoxel.destructible == this)
                 continue;
 
             while (destructibleVoxelIndex < destructibleVoxels.Count)
@@ -120,7 +119,7 @@ public class Destructible : MonoBehaviour
                 if (destructibleVoxel.active && destructibleVoxel.destructible == this)
                     continue;
 
-                destructibleVoxel.SetActive(exposedVoxelStruct, this);
+                destructibleVoxel.SetActive(voxelStruct, this);
 
                 break;
             }
@@ -144,25 +143,28 @@ public class Destructible : MonoBehaviour
                 continue;
 
             VoxelStruct hitVoxelStruct = hitDestructibleVoxel.voxelStruct;
-            if (!exposedVoxelStructs.Contains(hitVoxelStruct))
+            if (hitVoxelStruct.parentDestructible != this)
+                continue;
+
+            if (hitVoxelStruct.isSeperated)
                 continue;
 
             // Set Adjacent Voxel Faces To Draw
-            for (int removedFaceIndex = 0; removedFaceIndex < (int)Voxel.Faces.SIZE; removedFaceIndex++)
+            for (int adjacentFaceIndex = 0; adjacentFaceIndex < (int)Voxel.Faces.SIZE; adjacentFaceIndex++)
             {
-                VoxelStruct adjacentVoxelStruct = hitVoxelStruct.adjacentVoxelStructs[removedFaceIndex];
+                VoxelStruct adjacentVoxelStruct = hitVoxelStruct.adjacentVoxelStructs[adjacentFaceIndex];
                 if (adjacentVoxelStruct == null)
                     continue;
 
                 if (adjacentVoxelStruct.isSeperated)
                     continue;
 
-                adjacentVoxelStruct.drawFaces[VoxelAdjacentFaces[removedFaceIndex]] = true;
+                adjacentVoxelStruct.drawFaces[VoxelAdjacentFaces[adjacentFaceIndex]] = true;
 
                 // Expose Adjacent Voxel And Move Destructible Voxel Into Place
                 if (!adjacentVoxelStruct.isExposed)
                 {
-                    SetVoxelStructExposed(adjacentVoxelStruct);
+                    adjacentVoxelStruct.isExposed = true;
 
                     while (destructibleVoxelIndex < destructibleVoxels.Count)
                     {
@@ -197,7 +199,7 @@ public class Destructible : MonoBehaviour
                 if (seperatedVoxel.active)
                     continue;
 
-                seperatedVoxel.SetActive(hitVoxelStruct, this);
+                seperatedVoxel.SetActive(hitVoxelStruct, destructibleTransform);
                 seperatedVoxel.rigidBody.AddForce(GetVoxelStructLaunchForce(hitVoxelStruct));
 
                 break;
@@ -207,8 +209,6 @@ public class Destructible : MonoBehaviour
         UpdateFloatingVoxels();
 
         UpdateMesh();
-
-        Utility.ScaleBoxColliderBoundsToVoxelStructs(boxCollider, exposedVoxelStructs, destructibleTransform);
     }
 
     private Vector3 FindHitVoxelContactPosition(Vector3 hitPosition)
@@ -223,53 +223,15 @@ public class Destructible : MonoBehaviour
         return voxelHitPosition;
     }
 
-    private void SetVoxelStructExposed(VoxelStruct voxelStruct)
-    {
-        voxelStruct.isExposed = true;
-        exposedVoxelStructs.Add(voxelStruct);
-    }
-
     private void SeperateVoxelStruct(VoxelStruct voxelStruct)
     {
-        if (voxelStruct.isExposed)
-        {
-            exposedVoxelStructs.Remove(voxelStruct);
-        }
-
         if (voxelStruct.destructibleVoxel != null)
         {
             voxelStruct.destructibleVoxel.SetInactive();
         }
 
-        voxelStructs.Remove(voxelStruct);
-        
         voxelStruct.isSeperated = true;
-    }
-
-    private void UpdateMesh()
-    {
-        meshTriangles.Clear();
-
-        // Draw Exposed Voxel Face Triangles
-        foreach (VoxelStruct exposedVoxelStruct in exposedVoxelStructs)
-        {
-            int triangleRootVerticeIndex = 0;
-            bool[] drawFaces = exposedVoxelStruct.drawFaces;
-            int[] faceTriangleStartIndexes = exposedVoxelStruct.faceTriangleStartIndexes;
-            for (int faceIndex = 0; faceIndex < (int)Voxel.Faces.SIZE; faceIndex++)
-            {
-                if (drawFaces[faceIndex])
-                {
-                    triangleRootVerticeIndex = faceTriangleStartIndexes[faceIndex];
-                    for (int triangleIndex = 0; triangleIndex < Voxel.FACE_TRIANGLES_VERTICES; triangleIndex++)
-                    {
-                        meshTriangles.Add(triangleRootVerticeIndex + VertexIndexFaceTriangleAdditions[faceIndex][triangleIndex]);
-                    }
-                }
-            }
-        }
-
-        mesh.triangles = meshTriangles.ToArray();
+        remainingVoxelStructCount--;
     }
 
     private void UpdateFloatingVoxels()
@@ -286,6 +248,10 @@ public class Destructible : MonoBehaviour
         for(int voxelIndex = 0; voxelIndex < voxelStructs.Count; voxelIndex++)
         {
             VoxelStruct voxelStruct = voxelStructs[voxelIndex];
+            
+            if (voxelStruct.isSeperated)
+                continue;
+
             if (voxelStruct.checkedForFloatingThisFrame)
             {
                 voxelStruct.checkedForFloatingThisFrame = false;
@@ -297,11 +263,14 @@ public class Destructible : MonoBehaviour
 
         // Launch All Voxel Structs if we are at minVoxelCount
         int seperatedVoxelIndex = 0;
-        if ((voxelStructs.Count - floatingVoxelStructs.Count) < minVoxelCount)
+        if ((remainingVoxelStructCount - floatingVoxelStructs.Count) < minVoxelCount)
         {
             for (int voxelIndex = 0; voxelIndex < voxelStructs.Count; voxelIndex++)
             {
                 VoxelStruct voxelStruct = voxelStructs[voxelIndex];
+                if (voxelStruct.isSeperated)
+                    continue;
+
                 if (!voxelStruct.isSeperated)
                 {
                     SeperateVoxelStruct(voxelStruct);
@@ -316,7 +285,7 @@ public class Destructible : MonoBehaviour
                     if (seperatedVoxel.active)
                         continue;
 
-                    seperatedVoxel.SetActive(voxelStruct, this);
+                    seperatedVoxel.SetActive(voxelStruct, destructibleTransform);
                     seperatedVoxel.rigidBody.AddForce(GetVoxelStructLaunchForce(voxelStruct));
 
                     break;
@@ -339,15 +308,26 @@ public class Destructible : MonoBehaviour
                 {
                     SeperateVoxelStruct(voxelStruct);
                 }
+
+                // Teleport and launch first available seperated voxel
+                while (seperatedVoxelIndex < seperatedVoxels.Count)
+                {
+                    SeperatedVoxel seperatedVoxel = seperatedVoxels[seperatedVoxelIndex];
+                    seperatedVoxelIndex++;
+
+                    if (seperatedVoxel.active)
+                        continue;
+
+                    seperatedVoxel.SetActive(voxelStruct, destructibleTransform);
+
+                    break;
+                }
             }
 
-            if (floatingVoxelStructs.Count > 0)
-            {
-                FloatingVoxelChunk.CreateFloatingVoxelChunk(destructibleTransform, mesh, material, floatingVoxelStructs);
-            }
-
-            if (voxelStructs.Count == 0)
+            if (remainingVoxelStructCount == 0)
                 Destroy(gameObject);
+
+            Utility.ScaleBoxColliderBoundsToVoxelStructs(boxCollider, voxelStructs, destructibleTransform);
         }
     }
 
@@ -375,6 +355,40 @@ public class Destructible : MonoBehaviour
 
             FloodFillVoxelStruct(adjacentVoxelStruct);
         }
+    }
+    private void UpdateMesh()
+    {
+        meshTriangles.Clear();
+
+        int triangleRootVerticeIndex = 0;
+        bool[] drawFaces;
+        int[] faceTriangleStartIndexes;
+
+        // Draw Exposed Voxel Face Triangles
+        foreach (VoxelStruct voxelStruct in voxelStructs)
+        {
+            if (voxelStruct.isSeperated)
+                continue;
+
+            if (!voxelStruct.isExposed)
+                continue;
+
+            drawFaces = voxelStruct.drawFaces;
+            faceTriangleStartIndexes = voxelStruct.faceTriangleStartIndexes;
+            for (int faceIndex = 0; faceIndex < (int)Voxel.Faces.SIZE; faceIndex++)
+            {
+                if (!drawFaces[faceIndex])
+                    continue;
+
+                triangleRootVerticeIndex = faceTriangleStartIndexes[faceIndex];
+                for (int triangleIndex = 0; triangleIndex < Voxel.FACE_TRIANGLES_VERTICES; triangleIndex++)
+                {
+                    meshTriangles.Add(triangleRootVerticeIndex + VertexIndexFaceTriangleAdditions[faceIndex][triangleIndex]);
+                }
+            }
+        }
+
+        mesh.triangles = meshTriangles.ToArray();
     }
 
     private Vector3 GetVoxelStructLaunchForce(VoxelStruct voxelStruct)

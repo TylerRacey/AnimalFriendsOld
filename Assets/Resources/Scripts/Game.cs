@@ -78,6 +78,12 @@ public class Game : MonoBehaviour
         {
             Destroy(gameObjectToDestroy);
         }
+
+        Physics.IgnoreLayerCollision(LayerMask.NameToLayer("Destructible"), LayerMask.NameToLayer("SeperatedVoxel"));
+        Physics.IgnoreLayerCollision(LayerMask.NameToLayer("Player"), LayerMask.NameToLayer("DestructibleVoxel"));
+        Physics.IgnoreLayerCollision(LayerMask.NameToLayer("Player"), LayerMask.NameToLayer("SeperatedVoxel"));
+        Physics.IgnoreLayerCollision(LayerMask.NameToLayer("SeperatedVoxel"), LayerMask.NameToLayer("FloatingVoxel"));
+        Physics.IgnoreLayerCollision(LayerMask.NameToLayer("DestructibleVoxel"), LayerMask.NameToLayer("FloatingVoxel"));
     }
 
     public static Game GetGame()

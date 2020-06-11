@@ -9,9 +9,9 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 83e0b0593ab68d84a8f9b5ca2b8c8020, type: 3}
+  m_Script: {fileID: 0}
   m_Name: destructible_tree_a96
-  m_EditorClassIdentifier: 
+  m_EditorClassIdentifier: Assembly-CSharp::VoxelExport
   localPosition: {x: -0.089000225, y: 1.7, z: 0.29500002}
   color: {r: 0.6313726, g: 0.35686275, b: 0, a: 1}
   drawFaces: 000000010001
@@ -23,3 +23,4 @@ MonoBehaviour:
   gameObject: {fileID: 0}
   meshUV: {x: 0.5, y: 0}
   faceTriangleStartIndexes: 0009000004090000080900000c0900001009000014090000
+  voxelIndex: 96
