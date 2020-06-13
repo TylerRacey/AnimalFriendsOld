@@ -10,6 +10,7 @@ public class VoxelGameObjectToDestructiblePrefab : EditorWindow
     const string assetsFolderPath = "Assets/Resources/GeneratedMeshes";
 
     string meshName = "Default";
+    bool makeHollow = false;
 
     [MenuItem("Tools/Voxel Game Objects To Destructible Prefab")]
     static void CreateVoxelGameObjectToDestructiblePrefab()
@@ -20,6 +21,8 @@ public class VoxelGameObjectToDestructiblePrefab : EditorWindow
     private void OnGUI()
     {
         meshName = EditorGUILayout.TextField("Mesh Name: ", meshName);
+
+        makeHollow = EditorGUILayout.Toggle("Hollow: ", makeHollow);
 
         if (GUILayout.Button("Create Mesh"))
         {
@@ -127,6 +130,9 @@ public class VoxelGameObjectToDestructiblePrefab : EditorWindow
                     drawFaces[directionIndex] = true;
                 }
             }
+
+            if (makeHollow && !isExposed)
+                continue;
 
             // Create Voxel Export
             Material voxelMaterial = voxel.GetComponent<MeshRenderer>().sharedMaterial;

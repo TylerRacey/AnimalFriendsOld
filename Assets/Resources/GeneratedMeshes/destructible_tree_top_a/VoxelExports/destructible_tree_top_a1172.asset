@@ -1,0 +1,26 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 0}
+  m_Name: destructible_tree_top_a1172
+  m_EditorClassIdentifier: Assembly-CSharp::VoxelExport
+  localPosition: {x: -0.6999998, y: 0.5, z: -0.5500002}
+  color: {r: 0, g: 0.48235294, b: 0.078431375, a: 1}
+  drawFaces: 010000000100
+  adjacentVoxelExportIndexes: fffffffffc0400009a04000021040000ffffffffffffffff
+  isSeperated: 0
+  isAnchor: 0
+  isExposed: 1
+  checkedForFloatingThisFrame: 0
+  gameObject: {fileID: 0}
+  meshUV: {x: 0.5, y: 0}
+  faceTriangleStartIndexes: e06d0000e46d0000e86d0000ec6d0000f06d0000f46d0000
+  voxelIndex: 4845
