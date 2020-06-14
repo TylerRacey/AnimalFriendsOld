@@ -27,6 +27,7 @@ public static class Voxel
     public const int FACE_TRIANGLES_VERTICES = 6;
     public const float SIZE = 0.10f;
     public const float HALF_SIZE = SIZE * 0.5f;
+    public static readonly Vector3 EXTENTS = new Vector3(Voxel.SIZE, Voxel.SIZE, Voxel.SIZE);
 }
 
 public class VoxelStruct

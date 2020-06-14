@@ -45,7 +45,7 @@ public class FloatingVoxelChunk : MonoBehaviour
         // Turn Floating Chunk Into Destructible
         Destructible floatingChunkDestructible = floatingVoxelChunkGameObject.AddComponent<Destructible>();
 
-        floatingChunkDestructible.WasFloatingInit(parentVoxelStructs, floatingVoxelChunk.floatingVoxelChunkTransform, parentMesh.triangles.Length, remainingVoxelStructCount, minVoxelCount, floatingVoxelChunk.boxCollider, floatingVoxelChunk.mesh);
+        floatingChunkDestructible.WasFloatingInit(parentVoxelStructs, parentMesh.triangles.Length, remainingVoxelStructCount, minVoxelCount);
 
         floatingVoxelChunk.LaunchChunk(launchDirection);
     }

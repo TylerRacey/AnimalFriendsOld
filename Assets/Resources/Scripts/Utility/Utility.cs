@@ -174,65 +174,6 @@ public static class Utility
         return new int[] { (int)Voxel.Faces.BACK, (int)Voxel.Faces.LEFT, (int)Voxel.Faces.BOTTOM, (int)Voxel.Faces.RIGHT, (int)Voxel.Faces.TOP, (int)Voxel.Faces.FRONT };
     }  
 
-    public static void ScaleBoxColliderBoundsToVoxelStructs(BoxCollider boxCollider, List<VoxelStruct> voxelStructs, Transform parentTransform)
-    {
-        // Find Voxels On Edge To Encapsulate Smallest Number Of Voxels
-        Vector3 voxelLocalPosition;
-        Vector3 smallestX = new Vector3(float.MaxValue, 0, 0);
-        Vector3 largestX = new Vector3(float.MinValue, 0, 0);
-        Vector3 smallestY = new Vector3(0, float.MaxValue, 0);
-        Vector3 largestY = new Vector3(0, float.MinValue, 0);
-        Vector3 smallestZ = new Vector3(0, 0, float.MaxValue);
-        Vector3 largestZ = new Vector3(0, 0, float.MinValue);
-
-        foreach (VoxelStruct voxelStruct in voxelStructs)
-        {
-            if (voxelStruct.isSeperated)
-                continue;
-
-            if (!voxelStruct.isExposed)
-                continue;
-
-            voxelLocalPosition = voxelStruct.localPosition;
-            if (voxelLocalPosition.x < smallestX.x)
-                smallestX = voxelLocalPosition;
-
-            if (voxelLocalPosition.x > largestX.x)
-                largestX = voxelLocalPosition;
-
-            if (voxelLocalPosition.y > largestY.y)
-                largestY = voxelLocalPosition;
-
-            if (voxelLocalPosition.y < smallestY.y)
-                smallestY = voxelLocalPosition;
-
-            if (voxelLocalPosition.z > largestZ.z)
-                largestZ = voxelLocalPosition;
-
-            if (voxelLocalPosition.z < smallestZ.z)
-                smallestZ = voxelLocalPosition;
-        }
-
-        // Encapsulate edge voxels' Bounds
-        Vector3 up = parentTransform.up;
-        Vector3 right = parentTransform.right;
-        Vector3 forward = parentTransform.forward;
-        Vector3 voxelSize = new Vector3(Voxel.SIZE, Voxel.SIZE, Voxel.SIZE);
-        Vector3[] encapsulateLocalPositions = new Vector3[] { smallestX, largestX, smallestY, largestY, smallestZ, largestZ };
-        Bounds newBounds = new Bounds(encapsulateLocalPositions[0], voxelSize);
-        Bounds voxelBounds = new Bounds();
-        for (int index = 0; index < encapsulateLocalPositions.Length; index++)
-        {
-            voxelBounds.size = voxelSize;
-            voxelBounds.center = encapsulateLocalPositions[index] + up * Voxel.HALF_SIZE + right * Voxel.HALF_SIZE + forward * Voxel.HALF_SIZE;
-
-            newBounds.Encapsulate(voxelBounds);
-        }
-
-        boxCollider.center = newBounds.center;
-        boxCollider.size = new Vector3(newBounds.size.x, newBounds.size.y, newBounds.size.z);
-    }
-
     public static BoxCollider VoxelCreateBoxCollider(GameObject voxel)
     {
         BoxCollider boxCollider = voxel.AddComponent<BoxCollider>();

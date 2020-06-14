@@ -107,10 +107,10 @@ public class PlayerViewmodel : MonoBehaviour
 
     public void AxeSwingImpact()
     {
-        RaycastHit hit;
-        if (Physics.Raycast(game.playerEye.position, game.playerEye.forward, out hit, axeSwingTrunkDistance, LayerMask.GetMask("Destructible")))
+        RaycastHit[] hits = Physics.RaycastAll(game.playerEye.position, game.playerEye.forward, axeSwingTrunkDistance, LayerMask.GetMask("Destructible"));
+        for (int hitIndex = 0; hitIndex < hits.Length; hitIndex++)
         {
-            hit.collider.gameObject.GetComponent<Destructible>().TakeDamage(hit.point, axeSwingDamageRadius);
+            hits[hitIndex].collider.gameObject.GetComponent<Destructible>().TakeDamage(hits[hitIndex].point, axeSwingDamageRadius);
         }
 
         swingDisabled = false;
