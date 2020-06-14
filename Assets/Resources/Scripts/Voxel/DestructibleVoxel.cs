@@ -31,9 +31,9 @@ public class DestructibleVoxel : MonoBehaviour
         Transform parentTransform = parentDestructible.transform;
         voxelTransform.position = parentTransform.TransformPoint(parentVoxelStruct.localPosition);
         voxelTransform.rotation = parentTransform.rotation;
-        if (parentVoxelStruct != null)
+        if (voxelStruct != null)
         {
-            parentVoxelStruct.destructibleVoxel = null;
+            voxelStruct.destructibleVoxel = null;
         }
 
         voxelStruct = parentVoxelStruct;
@@ -46,12 +46,13 @@ public class DestructibleVoxel : MonoBehaviour
     {
         voxelTransform.position = destructibleVoxelsParentTransform.position;
 
-        destructible = null;
         if (voxelStruct != null)
         {
             voxelStruct.destructibleVoxel = null;
         }
         voxelStruct = null;
+        destructible = null;
+
         active = false;
     }
 }

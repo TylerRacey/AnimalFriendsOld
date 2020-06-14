@@ -15,7 +15,7 @@ public class PlayerViewmodel : MonoBehaviour
     private bool swinging;
     private bool swingDisabled = false;
 
-    private const float axeSwingTrunkDistance = 2.0f;
+    private const float axeSwingTrunkDistance = 2.5f;
     private const float axeSwingDamageRadius = 0.25f;
 
     // Start is called before the first frame update

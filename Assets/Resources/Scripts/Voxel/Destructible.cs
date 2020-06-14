@@ -35,6 +35,8 @@ public class Destructible : MonoBehaviour
     private const float minVoxelCountAnchorScalar = 2.25f;
 
     private bool wasFloating;
+    private Vector3 lastPosition;
+    private Quaternion lastRotation;
 
     private int[] VoxelAdjacentFaces = Utility.GetVoxelAdjacentFaces();
     private int[][] VertexIndexFaceTriangleAdditions = Voxel.VertexIndexFaceTriangleAdditions;
@@ -50,12 +52,13 @@ public class Destructible : MonoBehaviour
         seperatedVoxels = game.seperatedVoxels;
 
         destructibleTransform = transform;
-        boxCollider = GetComponent<BoxCollider>();
+        lastPosition = destructibleTransform.position;
+        lastRotation = destructibleTransform.rotation;
 
+        boxCollider = GetComponent<BoxCollider>();
         mesh = GetComponent<MeshFilter>().mesh;
         material = GetComponent<MeshRenderer>().material;
         thisDestructible = this;
-
         destructibleCenterFlattened = new Vector3(destructibleTransform.position.x, 0, destructibleTransform.position.z);
 
         if (voxelExports.Count > 0)
@@ -76,8 +79,7 @@ public class Destructible : MonoBehaviour
             bool isNewVoxelSeperated = parentVoxelStruct.isSeperated || !parentVoxelStruct.isFloating;
             bool isNewVoxelExposed = parentVoxelStruct.isExposed && parentVoxelStruct.isFloating;
 
-            VoxelStruct newVoxelStruct = new VoxelStruct(parentVoxelStruct.localPosition, Utility.CopyArray(parentVoxelStruct.drawFaces), isNewVoxelSeperated, false, isNewVoxelExposed, false, parentVoxelStruct.meshUV, Utility.CopyArray(parentVoxelStruct.adjacentVoxelIndexes), parentVoxelStruct.color, parentVoxelStruct.faceTriangleStartIndexes, null);
-            newVoxelStruct.parentDestructible = thisDestructible;
+            VoxelStruct newVoxelStruct = new VoxelStruct(parentVoxelStruct.localPosition, Utility.CopyArray(parentVoxelStruct.drawFaces), isNewVoxelSeperated, false, isNewVoxelExposed, false, parentVoxelStruct.meshUV, Utility.CopyArray(parentVoxelStruct.adjacentVoxelIndexes), parentVoxelStruct.color, parentVoxelStruct.faceTriangleStartIndexes, thisDestructible);
             voxelStructs.Add(newVoxelStruct);
         }
 
@@ -116,6 +118,7 @@ public class Destructible : MonoBehaviour
     {
         // Assign DestructibleVoxel to ExposedStructs
         int destructibleVoxelIndex = 0;
+        bool hasDestructibleMoved = lastPosition != destructibleTransform.position || lastRotation != destructibleTransform.rotation;
         for (int voxelIndex = 0; voxelIndex < voxelStructs.Count; voxelIndex++)
         {
             VoxelStruct voxelStruct = voxelStructs[voxelIndex];
@@ -125,7 +128,8 @@ public class Destructible : MonoBehaviour
             if (!voxelStruct.isExposed)
                 continue;
 
-            if (voxelStruct.destructibleVoxel != null && voxelStruct.destructibleVoxel.destructible == thisDestructible)
+            // If we have already assigned a destructible voxel for this struct and we haven't moved, continue
+            if (voxelStruct.destructibleVoxel != null && voxelStruct.destructibleVoxel.destructible == thisDestructible && !hasDestructibleMoved)
                 continue;
 
             while (destructibleVoxelIndex < destructibleVoxels.Count)
@@ -160,6 +164,9 @@ public class Destructible : MonoBehaviour
                 continue;
 
             VoxelStruct hitVoxelStruct = hitDestructibleVoxel.voxelStruct;
+            if (hitVoxelStruct == null)
+                continue;
+
             if (hitVoxelStruct.parentDestructible != thisDestructible)
                 continue;
 
@@ -226,6 +233,9 @@ public class Destructible : MonoBehaviour
         UpdateMesh();
 
         Utility.ScaleBoxColliderBoundsToVoxelStructs(boxCollider, voxelStructs, destructibleTransform);
+
+        lastPosition = destructibleTransform.position;
+        lastRotation = destructibleTransform.rotation;
     }
 
     private Vector3 FindHitVoxelContactPosition(Vector3 hitPosition)
@@ -246,7 +256,7 @@ public class Destructible : MonoBehaviour
         {
             voxelStruct.destructibleVoxel.SetInactive();
         }
-
+        
         voxelStruct.isSeperated = true;
         remainingVoxelStructCount--;
     }
