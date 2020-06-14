@@ -38,16 +38,16 @@ public class VoxelStruct
     public bool isExposed;
     public bool checkedForFloatingThisFrame;
     public Vector2 meshUV;
-    public VoxelStruct[] adjacentVoxelStructs;
+    public int[] adjacentVoxelIndexes;
     public Color color;
     public int[] faceTriangleStartIndexes;
     public Vector3 launchDirection;
-    public int voxelIndex;
     public Destructible parentDestructible;
+    public bool isFloating = false;
 
     public DestructibleVoxel destructibleVoxel;
 
-    public VoxelStruct(Vector3 _localPosition, bool[] _drawFaces, bool _isSeperated, bool _isAnchor, bool _isExposed, bool _checkedForFloatingThisFrame, Vector2 _meshUV, VoxelStruct[] _adjacentVoxelStructs, Color _color, int[] _faceTriangleStartIndexes, int _voxelIndex, Destructible _parentDestructible)
+    public VoxelStruct(Vector3 _localPosition, bool[] _drawFaces, bool _isSeperated, bool _isAnchor, bool _isExposed, bool _checkedForFloatingThisFrame, Vector2 _meshUV, int[] _adjacentVoxelIndexes, Color _color, int[] _faceTriangleStartIndexes, Destructible _parentDestructible)
     {
         localPosition = _localPosition;
         drawFaces = Utility.CopyArray(_drawFaces);
@@ -56,10 +56,9 @@ public class VoxelStruct
         isExposed = _isExposed;
         checkedForFloatingThisFrame = _checkedForFloatingThisFrame;
         meshUV = _meshUV;
-        adjacentVoxelStructs = _adjacentVoxelStructs;
+        adjacentVoxelIndexes = Utility.CopyArray(_adjacentVoxelIndexes);
         color = _color;
         faceTriangleStartIndexes = _faceTriangleStartIndexes;
-        voxelIndex = _voxelIndex;
         parentDestructible = _parentDestructible;
     }
 }

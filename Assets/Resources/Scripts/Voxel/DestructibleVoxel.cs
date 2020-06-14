@@ -9,6 +9,7 @@ public class DestructibleVoxel : MonoBehaviour
     public bool active;
     public VoxelStruct voxelStruct;
     public Destructible destructible;
+    private DestructibleVoxel thisDestructibleVoxel;
 
     private Transform destructibleVoxelsParentTransform;
     private Transform voxelTransform;
@@ -21,6 +22,8 @@ public class DestructibleVoxel : MonoBehaviour
         destructibleVoxelsParentTransform = game.destructibleVoxelsParentTransform;
 
         boxCollider = Utility.VoxelCreateBoxCollider(gameObject);
+
+        thisDestructibleVoxel = this;
     }
 
     public void SetActive(VoxelStruct parentVoxelStruct, Destructible parentDestructible)
@@ -35,7 +38,7 @@ public class DestructibleVoxel : MonoBehaviour
 
         voxelStruct = parentVoxelStruct;
         destructible = parentDestructible;
-        voxelStruct.destructibleVoxel = this;
+        voxelStruct.destructibleVoxel = thisDestructibleVoxel;
         active = true;
     }
 

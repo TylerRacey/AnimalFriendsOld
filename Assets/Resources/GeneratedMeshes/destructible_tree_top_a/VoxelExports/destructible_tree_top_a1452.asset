@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 0}
   m_Name: destructible_tree_top_a1452
   m_EditorClassIdentifier: Assembly-CSharp::VoxelExport
-  localPosition: {x: -0.5, y: 3, z: 0.14999962}
+  localPosition: {x: -0.49999952, y: 3, z: 0.14999962}
   color: {r: 0, g: 0.48235294, b: 0.078431375, a: 1}
   drawFaces: 000001000000
   adjacentVoxelExportIndexes: ab0500000f060000ffffffff4a050000ffffffffad050000

@@ -160,6 +160,37 @@ public class VoxelGameObjectToDestructiblePrefab : EditorWindow
             generatedVoxels.Add(generatedVoxel);
         }
 
+        // If Hollow, Reset Draw Faces To Only Use Exposed Voxels
+        if (makeHollow)
+        {
+            for (int voxelIndex = 0; voxelIndex < voxels.Count; voxelIndex++)
+            {
+                GameObject voxel = voxels[voxelIndex];
+                BoxCollider boxCollider = voxel.GetComponent<BoxCollider>();
+                Vector3 voxelCenter = boxCollider.bounds.center;
+
+                Vector3[] faceDirectionChecks = new Vector3[] { -voxel.transform.forward, voxel.transform.right, voxel.transform.up, -voxel.transform.right, -voxel.transform.up, voxel.transform.forward };
+
+                // Add Inner Face Of Exposed Voxels To Draw
+                for (int directionIndex = 0; directionIndex < (int)Voxel.Faces.SIZE; directionIndex++)
+                {
+                    RaycastHit raycastHit;
+                    if (Physics.Raycast(voxelCenter, faceDirectionChecks[directionIndex], out raycastHit, Voxel.SIZE))
+                    {
+                        GameObject hitObject = raycastHit.collider.gameObject;
+
+                        if (!voxels.Contains(hitObject))
+                            continue;
+
+                        if (voxelExports[voxels.IndexOf(hitObject)] != null)
+                            continue;
+
+                        voxelExports[voxelIndex].drawFaces[directionIndex] = true;
+                    }
+                } 
+            }
+        }
+
         // Remove Box Colliders to Original Voxels
         for (int voxelIndex = 0; voxelIndex < voxels.Count; voxelIndex++)
         {
@@ -436,10 +467,10 @@ public class VoxelGameObjectToDestructiblePrefab : EditorWindow
         AssetDatabase.CreateFolder(assetsFolderPath + "/" + meshName, "Materials");
         AssetDatabase.CreateFolder(assetsFolderPath + "/" + meshName, "VoxelExports");
 
-        for (int index = 0; index < voxelExports.Count; index++)
-        {
-            AssetDatabase.CreateAsset(voxelExports[index], AssetDatabase.GenerateUniqueAssetPath(assetsFolderPath + "/" + meshName + "/VoxelExports/" + meshName + index + ".asset"));
-        }
+        //for (int index = 0; index < voxelExports.Count; index++)
+        //{
+        //    AssetDatabase.CreateAsset(voxelExports[index], AssetDatabase.GenerateUniqueAssetPath(assetsFolderPath + "/" + meshName + "/VoxelExports/" + meshName + index + ".asset"));
+        //}
 
         AssetDatabase.SaveAssets();
         AssetDatabase.Refresh();
