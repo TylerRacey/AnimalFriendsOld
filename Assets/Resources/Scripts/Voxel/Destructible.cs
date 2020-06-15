@@ -41,7 +41,7 @@ public class Destructible : MonoBehaviour
     private const float findHitVoxelPositionDepth = 4.0f;
     private const float floatingDestructibleStartVelocityMagnitude = 1.0f;
     private const float floatingDestructibleStartLaunchMagnitude = 30.0f;
-    private const float wasFloatingDamageForceMagnitude = 75.0f;
+    private const float wasFloatingDamageForceMagnitude = 25.0f;
 
     private bool wasFloating;
     private Vector3 lastPosition;
@@ -138,8 +138,7 @@ public class Destructible : MonoBehaviour
             if (!voxelStruct.isExposed)
                 continue;
 
-            // If we have already assigned a destructible voxel for this struct and we haven't moved, continue
-            if (voxelStruct.destructibleVoxel != null && voxelStruct.destructibleVoxel.destructible == thisDestructible && lastPosition == destructibleTransform.position && lastRotation == destructibleTransform.rotation)
+            if (voxelStruct.destructibleVoxel != null && lastPosition == destructibleTransform.position && lastRotation == destructibleTransform.rotation)
                 continue;
 
             while (destructibleVoxelIndex < destructibleVoxels.Count)
@@ -322,30 +321,67 @@ public class Destructible : MonoBehaviour
         int seperatedVoxelIndex = 0;
         if ((remainingVoxelStructCount - floatingVoxelStructCount) < minVoxelCount)
         {
-            for (int voxelIndex = 0; voxelIndex < voxelStructs.Count; voxelIndex++)
+            if (floatingVoxelStructCount >= minVoxelCount)
             {
-                VoxelStruct voxelStruct = voxelStructs[voxelIndex];
-                if (voxelStruct.isSeperated)
-                    continue;
+                CreateDestructibleFromFloatingVoxels();
 
-                if (!voxelStruct.isSeperated)
+                for (int voxelIndex = 0; voxelIndex < voxelStructs.Count; voxelIndex++)
                 {
-                    SeperateVoxelStruct(voxelStruct);
-                }
-
-                // Teleport and launch first available seperated voxel
-                while (seperatedVoxelIndex < seperatedVoxels.Count)
-                {
-                    SeperatedVoxel seperatedVoxel = seperatedVoxels[seperatedVoxelIndex];
-                    seperatedVoxelIndex++;
-
-                    if (seperatedVoxel.active)
+                    VoxelStruct voxelStruct = voxelStructs[voxelIndex];
+                    if (voxelStruct.isSeperated)
                         continue;
 
-                    seperatedVoxel.SetActive(voxelStruct, destructibleTransform);
-                    seperatedVoxel.rigidBody.AddForce(GetVoxelStructLaunchForce(voxelStruct));
+                    if (voxelStruct.isFloating)
+                        continue;
 
-                    break;
+                    if (!voxelStruct.isSeperated)
+                    {
+                        SeperateVoxelStruct(voxelStruct);
+                    }
+
+                    // Teleport and launch first available seperated voxel
+                    while (seperatedVoxelIndex < seperatedVoxels.Count)
+                    {
+                        SeperatedVoxel seperatedVoxel = seperatedVoxels[seperatedVoxelIndex];
+                        seperatedVoxelIndex++;
+
+                        if (seperatedVoxel.active)
+                            continue;
+
+                        seperatedVoxel.SetActive(voxelStruct, destructibleTransform);
+                        seperatedVoxel.rigidBody.AddForce(GetVoxelStructLaunchForce(voxelStruct));
+
+                        break;
+                    }
+                }
+            }
+            else
+            {
+                for (int voxelIndex = 0; voxelIndex < voxelStructs.Count; voxelIndex++)
+                {
+                    VoxelStruct voxelStruct = voxelStructs[voxelIndex];
+                    if (voxelStruct.isSeperated)
+                        continue;
+
+                    if (!voxelStruct.isSeperated)
+                    {
+                        SeperateVoxelStruct(voxelStruct);
+                    }
+
+                    // Teleport and launch first available seperated voxel
+                    while (seperatedVoxelIndex < seperatedVoxels.Count)
+                    {
+                        SeperatedVoxel seperatedVoxel = seperatedVoxels[seperatedVoxelIndex];
+                        seperatedVoxelIndex++;
+
+                        if (seperatedVoxel.active)
+                            continue;
+
+                        seperatedVoxel.SetActive(voxelStruct, destructibleTransform);
+                        seperatedVoxel.rigidBody.AddForce(GetVoxelStructLaunchForce(voxelStruct));
+
+                        break;
+                    }
                 }
             }
 
@@ -356,7 +392,7 @@ public class Destructible : MonoBehaviour
         {
             if (floatingVoxelStructCount >= minVoxelCount)
             {
-                CreateDestructibleFromFloatingVoxels(floatingVoxelStructCount);
+                CreateDestructibleFromFloatingVoxels();
 
                 foreach (VoxelStruct voxelStruct in floatingVoxelStructs)
                 {
@@ -499,7 +535,7 @@ public class Destructible : MonoBehaviour
         return launchVector;
     }
 
-    private void CreateDestructibleFromFloatingVoxels(int floatingVoxelStructCount)
+    private void CreateDestructibleFromFloatingVoxels()
     {
         // Create destructible gameobject
         GameObject newDestructibleGameObject = new GameObject(destructibleTransform.name);
@@ -510,7 +546,7 @@ public class Destructible : MonoBehaviour
         // Initialized destructible script
         Destructible newDestructible = newDestructibleGameObject.AddComponent<Destructible>();
         newDestructible.wasFloating = true;
-        newDestructible.remainingVoxelStructCount = floatingVoxelStructCount;
+        newDestructible.remainingVoxelStructCount = floatingVoxelStructs.Count;
         newDestructible.minVoxelCount = minVoxelCount;
 
         // Add Physics to destructible
