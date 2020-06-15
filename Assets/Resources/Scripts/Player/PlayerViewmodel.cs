@@ -65,7 +65,7 @@ public class PlayerViewmodel : MonoBehaviour
             RaycastHit hit;
             if (Physics.Raycast(game.playerEye.position, game.playerEye.forward, out hit, axeSwingTrunkDistance, LayerMask.GetMask("Destructible")))
             {
-                hit.collider.gameObject.GetComponent<Destructible>().AssignDestructibleVoxels();
+                hit.collider.gameObject.GetComponent<Destructible>().AssignDestructibleVoxels(hit.point);
             }
 
             swinging = true;

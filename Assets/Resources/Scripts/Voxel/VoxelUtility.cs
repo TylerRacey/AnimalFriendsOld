@@ -13,6 +13,7 @@ public static class Voxel
         SIZE
     }
 
+    public const float MASS = 1.0f;
     public const int FACE_QUAD_VERTICES = 4;
     public const int FACE_TRIANGLES_VERTICES = 6;
     public const float SIZE = 0.10f;
@@ -53,15 +54,16 @@ public class VoxelStruct
     public bool isExposed;
     public bool checkedForFloatingThisFrame;
     public Vector2 meshUV;
-    public int[] adjacentVoxelIndexes;
     public Color color;
     public Vector3 launchDirection;
     public Destructible parentDestructible;
     public bool isFloating = false;
+    public int[] adjacentVoxelIndexes = new int[(int)Voxel.Faces.SIZE];
 
     public DestructibleVoxel destructibleVoxel;
+    public VoxelStruct[] adjacentVoxelStructs = new VoxelStruct[(int)Voxel.Faces.SIZE];
 
-    public VoxelStruct(Vector3 _localPosition, bool[] _drawFaces, bool _isSeperated, bool _isAnchor, bool _isExposed, bool _checkedForFloatingThisFrame, Vector2 _meshUV, int[] _adjacentVoxelIndexes, Color _color, Destructible _parentDestructible)
+    public VoxelStruct(Vector3 _localPosition, bool[] _drawFaces, bool _isSeperated, bool _isAnchor, bool _isExposed, bool _checkedForFloatingThisFrame, Vector2 _meshUV, Color _color, Destructible _parentDestructible, int[] _adjacentVoxelIndexes)
     {
         localPosition = _localPosition;
         drawFaces = Utility.CopyArray(_drawFaces);
@@ -70,9 +72,9 @@ public class VoxelStruct
         isExposed = _isExposed;
         checkedForFloatingThisFrame = _checkedForFloatingThisFrame;
         meshUV = _meshUV;
-        adjacentVoxelIndexes = Utility.CopyArray(_adjacentVoxelIndexes);
         color = _color;
         parentDestructible = _parentDestructible;
+        adjacentVoxelIndexes = _adjacentVoxelIndexes;
     }
 }
 
