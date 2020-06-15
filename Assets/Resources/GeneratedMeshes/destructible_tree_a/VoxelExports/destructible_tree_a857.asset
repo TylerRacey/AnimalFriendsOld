@@ -22,5 +22,4 @@ MonoBehaviour:
   checkedForFloatingThisFrame: 0
   gameObject: {fileID: 0}
   meshUV: {x: 0.9, y: 0}
-  faceTriangleStartIndexes: 585000005c5000006050000064500000685000006c500000
   voxelIndex: 857

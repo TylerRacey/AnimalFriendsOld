@@ -10,7 +10,7 @@ public class FloatingVoxelChunk : MonoBehaviour
 
     public Transform floatingVoxelChunkTransform;
     public Rigidbody rigidBody;
-    public BoxCollider boxCollider;
+    public MeshCollider meshCollider;
 
     public Mesh mesh;
 
@@ -33,7 +33,8 @@ public class FloatingVoxelChunk : MonoBehaviour
 
         // Add Physics to Voxel Chunk
         floatingVoxelChunk.rigidBody = floatingVoxelChunkGameObject.AddComponent<Rigidbody>();
-        floatingVoxelChunk.boxCollider = floatingVoxelChunkGameObject.AddComponent<BoxCollider>();
+        floatingVoxelChunk.meshCollider = floatingVoxelChunkGameObject.AddComponent<MeshCollider>();
+        floatingVoxelChunk.meshCollider.convex = true;
 
         // Set Mesh Of Voxel Chunk
         floatingVoxelChunk.mesh = new Mesh();

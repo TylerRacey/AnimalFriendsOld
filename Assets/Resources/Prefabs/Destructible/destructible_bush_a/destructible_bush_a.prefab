@@ -10,8 +10,8 @@ GameObject:
   m_Component:
   - component: {fileID: 1645242140303606196}
   - component: {fileID: 8188197759645072075}
-  - component: {fileID: 1816081908963869023}
   - component: {fileID: 8375945471862274133}
+  - component: {fileID: 7121868717872736354}
   - component: {fileID: 6183332313321028837}
   m_Layer: 9
   m_Name: destructible_bush_a
@@ -291,8 +291,19 @@ MonoBehaviour:
   - {fileID: 11400000, guid: f22f89c3bcd081c40be2e96a1d795cf1, type: 2}
   - {fileID: 11400000, guid: 19518b4e3afc3e54592c4061f0555b82, type: 2}
   - {fileID: 11400000, guid: 31cb1c8022aedaf428d854226da3acef, type: 2}
---- !u!65 &1816081908963869023
-BoxCollider:
+  remainingVoxelStructCount: 0
+  floatingVoxelStructCount: 0
+  minVoxelCount: 0
+--- !u!33 &8375945471862274133
+MeshFilter:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4932687851760740233}
+  m_Mesh: {fileID: 4300000, guid: 0c312009ceae9664b9da456474492a73, type: 2}
+--- !u!64 &7121868717872736354
+MeshCollider:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -301,16 +312,9 @@ BoxCollider:
   m_Material: {fileID: 0}
   m_IsTrigger: 0
   m_Enabled: 1
-  serializedVersion: 2
-  m_Size: {x: 0.7999996, y: 0.8, z: 0.79999983}
-  m_Center: {x: -0.00000029802322, y: 0.4, z: -0.049999893}
---- !u!33 &8375945471862274133
-MeshFilter:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4932687851760740233}
+  serializedVersion: 4
+  m_Convex: 1
+  m_CookingOptions: 30
   m_Mesh: {fileID: 4300000, guid: 0c312009ceae9664b9da456474492a73, type: 2}
 --- !u!23 &6183332313321028837
 MeshRenderer:

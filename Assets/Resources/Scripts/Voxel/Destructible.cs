@@ -15,7 +15,7 @@ public class Destructible : MonoBehaviour
     private List<SeperatedVoxel> seperatedVoxels;
 
     private Transform destructibleTransform;
-    private BoxCollider boxCollider;
+    private MeshCollider meshCollider;
     private Mesh mesh;
     private Material material;
     private Destructible thisDestructible;
@@ -29,6 +29,9 @@ public class Destructible : MonoBehaviour
     public int floatingVoxelStructCount;
 
     private List<int> meshTriangles = new List<int>();
+    private List<Vector3> meshVertices = new List<Vector3>();
+    private List<Vector3> meshNormals = new List<Vector3>();
+    private List<Vector2> meshUVs = new List<Vector2>();
 
     private Vector3 destructibleCenterFlattened;
     public int minVoxelCount = 0;
@@ -40,20 +43,8 @@ public class Destructible : MonoBehaviour
 
     private static readonly int[] VoxelAdjacentFaces = Utility.GetVoxelAdjacentFaces();
     private static readonly int[][] VertexIndexFaceTriangleAdditions = Voxel.VertexIndexFaceTriangleAdditions;
-
-    private Vector3 smallestXPosition;
-    private Vector3 largestXPosition;
-    private Vector3 smallestYPosition;
-    private Vector3 largestYPosition;
-    private Vector3 smallestZPosition;
-    private Vector3 largestZPosition;
-
-    private float smallestXPrevious;
-    private float largestXPrevious;
-    private float smallestYPrevious;
-    private float largestYPrevious;
-    private float smallestZPrevious;
-    private float largestZPrevious;
+    private static readonly Vector3[][] VertexVectorAdditions = Voxel.VertexVectorAdditions;
+    private static readonly Vector3[] VertexNormals = Voxel.VertexNormals;
 
     void Start()
     {
@@ -69,7 +60,7 @@ public class Destructible : MonoBehaviour
         lastPosition = destructibleTransform.position;
         lastRotation = destructibleTransform.rotation;
 
-        boxCollider = GetComponent<BoxCollider>();
+        meshCollider = GetComponent<MeshCollider>();
         mesh = GetComponent<MeshFilter>().mesh;
         material = GetComponent<MeshRenderer>().material;
         thisDestructible = this;
@@ -78,13 +69,16 @@ public class Destructible : MonoBehaviour
         if (voxelExports.Count > 0)
         {
             ConvertVoxelExportsIntoVoxelStructs();
+
+            meshTriangles = new List<int>(mesh.triangles.Length);
+            meshVertices = new List<Vector3>(mesh.vertexCount);
+            meshNormals = new List<Vector3>(mesh.vertexCount);
+            meshUVs = new List<Vector2>(mesh.vertexCount);
         }
         else
         {
             UpdateMesh();
         }
-
-        ScaleBoxColliderBoundsToVoxelStructs();
     }
 
     public void WasFloatingInit(List<VoxelStruct> parentVoxelStructs, int meshTriangleCount, int _remainingVoxelStructCount, int _minVoxelCount)
@@ -99,7 +93,7 @@ public class Destructible : MonoBehaviour
             bool isNewVoxelSeperated = parentVoxelStruct.isSeperated || !parentVoxelStruct.isFloating;
             bool isNewVoxelExposed = parentVoxelStruct.isExposed && parentVoxelStruct.isFloating;
 
-            VoxelStruct newVoxelStruct = new VoxelStruct(parentVoxelStruct.localPosition, Utility.CopyArray(parentVoxelStruct.drawFaces), isNewVoxelSeperated, false, isNewVoxelExposed, false, parentVoxelStruct.meshUV, Utility.CopyArray(parentVoxelStruct.adjacentVoxelIndexes), parentVoxelStruct.color, parentVoxelStruct.faceTriangleStartIndexes, thisDestructible);
+            VoxelStruct newVoxelStruct = new VoxelStruct(parentVoxelStruct.localPosition, Utility.CopyArray(parentVoxelStruct.drawFaces), isNewVoxelSeperated, false, isNewVoxelExposed, false, parentVoxelStruct.meshUV, Utility.CopyArray(parentVoxelStruct.adjacentVoxelIndexes), parentVoxelStruct.color, thisDestructible);
             voxelStructs.Add(newVoxelStruct);
         }
 
@@ -113,7 +107,7 @@ public class Destructible : MonoBehaviour
         for (int index = 0; index < voxelExports.Count; index++)
         {
             VoxelExport voxelExport = voxelExports[index];
-            VoxelStruct voxelStruct = new VoxelStruct(voxelExport.localPosition, voxelExport.drawFaces, voxelExport.isSeperated, voxelExport.isAnchor, voxelExport.isExposed, false, voxelExport.meshUV, voxelExport.adjacentVoxelExportIndexes, voxelExport.color, voxelExport.faceTriangleStartIndexes, thisDestructible);
+            VoxelStruct voxelStruct = new VoxelStruct(voxelExport.localPosition, voxelExport.drawFaces, voxelExport.isSeperated, voxelExport.isAnchor, voxelExport.isExposed, false, voxelExport.meshUV, voxelExport.adjacentVoxelExportIndexes, voxelExport.color, thisDestructible);
 
             if (voxelStruct.isAnchor)
             {
@@ -247,8 +241,6 @@ public class Destructible : MonoBehaviour
             return;
 
         UpdateMesh();
-
-        ScaleBoxColliderBoundsToVoxelStructs();
 
         lastPosition = destructibleTransform.position;
         lastRotation = destructibleTransform.rotation;
@@ -443,10 +435,12 @@ public class Destructible : MonoBehaviour
     public void UpdateMesh()
     {
         meshTriangles.Clear();
+        meshVertices.Clear();
+        meshNormals.Clear();
+        meshUVs.Clear();
 
-        int triangleRootVerticeIndex = 0;
+        int vertexCount = 0;
         bool[] drawFaces;
-        int[] faceTriangleStartIndexes;
 
         // Draw Exposed Voxel Face Triangles
         for (int voxelIndex = 0; voxelIndex < voxelStructs.Count; voxelIndex++)
@@ -459,21 +453,35 @@ public class Destructible : MonoBehaviour
                 continue;
 
             drawFaces = voxelStruct.drawFaces;
-            faceTriangleStartIndexes = voxelStruct.faceTriangleStartIndexes;
             for (int faceIndex = 0; faceIndex < (int)Voxel.Faces.SIZE; faceIndex++)
             {
                 if (!drawFaces[faceIndex])
                     continue;
 
-                triangleRootVerticeIndex = faceTriangleStartIndexes[faceIndex];
                 for (int triangleIndex = 0; triangleIndex < Voxel.FACE_TRIANGLES_VERTICES; triangleIndex++)
                 {
-                    meshTriangles.Add(triangleRootVerticeIndex + VertexIndexFaceTriangleAdditions[faceIndex][triangleIndex]);
+                    meshTriangles.Add(vertexCount + VertexIndexFaceTriangleAdditions[faceIndex][triangleIndex]);
+                }
+
+                for (int vertexIndex = 0; vertexIndex < Voxel.FACE_QUAD_VERTICES; vertexIndex++)
+                {
+                    meshVertices.Add(voxelStruct.localPosition + VertexVectorAdditions[faceIndex][vertexIndex]);
+                    
+                    meshNormals.Add(VertexNormals[faceIndex]);
+                    meshUVs.Add(voxelStruct.meshUV);
+                    
+                    vertexCount++;
                 }
             }
         }
 
+        mesh.Clear();
+        mesh.vertices = meshVertices.ToArray();
         mesh.triangles = meshTriangles.ToArray();
+        mesh.normals = meshNormals.ToArray();
+        mesh.uv = meshUVs.ToArray();
+
+        meshCollider.sharedMesh = mesh;
     }
 
     private Vector3 GetVoxelStructLaunchForce(VoxelStruct voxelStruct)
@@ -486,83 +494,5 @@ public class Destructible : MonoBehaviour
         launchVector += Vector3.up * Random.Range(100, 150) * Utility.RandomSign();
 
         return launchVector;
-    }
-
-    private void ScaleBoxColliderBoundsToVoxelStructs()
-    {
-        // Find Voxels On Edge To Encapsulate Smallest Number Of Voxels
-        Vector3 voxelLocalPosition;
-        smallestXPosition = Math.smallestXPositionBase;
-        largestXPosition = Math.largestXPositionBase;
-        smallestYPosition = Math.smallestYPositionBase;
-        largestYPosition = Math.largestYPositionBase;
-        smallestZPosition = Math.smallestZPositionBase;
-        largestZPosition = Math.largestZPositionBase;
-
-        foreach (VoxelStruct voxelStruct in voxelStructs)
-        {
-            if (voxelStruct.isSeperated)
-                continue;
-
-            if (!voxelStruct.isExposed)
-                continue;
-
-            voxelLocalPosition = voxelStruct.localPosition;
-
-            if (voxelLocalPosition.x < smallestXPosition.x)
-            {
-                smallestXPosition = voxelLocalPosition;
-            }
-            else if (voxelLocalPosition.x > largestXPosition.x)
-            {
-                largestXPosition = voxelLocalPosition;
-            }
-
-            if (voxelLocalPosition.y < smallestYPosition.y)
-            {
-                smallestYPosition = voxelLocalPosition;
-            }
-            else if (voxelLocalPosition.y > largestYPosition.y)
-            {
-                largestYPosition = voxelLocalPosition;
-            }
-
-            if (voxelLocalPosition.z < smallestZPosition.z)
-            {
-                smallestZPosition = voxelLocalPosition;
-            }
-            else if (voxelLocalPosition.z > largestZPosition.z)
-            {
-                largestZPosition = voxelLocalPosition;
-            }
-        }
-
-        // Don't recaculate if edges have not changed
-        if (smallestXPosition.x >= smallestXPrevious && largestXPosition.x <= largestXPrevious && smallestYPosition.y >= smallestYPrevious && largestYPosition.y <= smallestZPrevious && smallestZPosition.z >= smallestZPrevious && largestZPosition.z <= largestZPrevious)
-            return;
-
-        // Encapsulate edge voxels' Bounds
-        Vector3 up = destructibleTransform.up;
-        Vector3 right = destructibleTransform.right;
-        Vector3 forward = destructibleTransform.forward;
-        Vector3[] encapsulateLocalPositions = new Vector3[] { smallestXPosition, largestXPosition, smallestYPosition, largestYPosition, smallestZPosition, largestZPosition };
-        Bounds newBounds = new Bounds(encapsulateLocalPositions[0], Voxel.EXTENTS);
-        Bounds voxelBounds = new Bounds();
-        for (int index = 0; index < encapsulateLocalPositions.Length; index++)
-        {
-            voxelBounds.size = Voxel.EXTENTS;
-            voxelBounds.center = encapsulateLocalPositions[index] + up * Voxel.HALF_SIZE + right * Voxel.HALF_SIZE + forward * Voxel.HALF_SIZE;
-            newBounds.Encapsulate(voxelBounds);
-        }
-
-        boxCollider.center = newBounds.center;
-        boxCollider.size = new Vector3(newBounds.size.x, newBounds.size.y, newBounds.size.z);
-
-        smallestXPrevious = smallestXPosition.x;
-        largestXPrevious = largestXPosition.x;
-        smallestYPrevious = smallestYPosition.y;
-        largestYPrevious = largestYPosition.y;
-        smallestZPrevious = smallestZPosition.y;
-        largestZPrevious = largestZPosition.z;
     }
 }

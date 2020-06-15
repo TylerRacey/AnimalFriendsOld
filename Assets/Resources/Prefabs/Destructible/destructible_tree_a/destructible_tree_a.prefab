@@ -10,8 +10,8 @@ GameObject:
   m_Component:
   - component: {fileID: 567301177437747233}
   - component: {fileID: 567301177437747237}
-  - component: {fileID: 567301177437747232}
   - component: {fileID: 567301177437747239}
+  - component: {fileID: 3342882062830099416}
   - component: {fileID: 567301177437747238}
   m_Layer: 9
   m_Name: destructible_tree_a
@@ -1162,8 +1162,19 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 508646632d8b2af468268e6f8047fc0b, type: 2}
   - {fileID: 11400000, guid: b4440dd9f6b98904ca5afc6956ed69de, type: 2}
   - {fileID: 11400000, guid: f29e9f655cac6d64f829d0302c61ff38, type: 2}
---- !u!65 &567301177437747232
-BoxCollider:
+  remainingVoxelStructCount: 0
+  floatingVoxelStructCount: 0
+  minVoxelCount: 0
+--- !u!33 &567301177437747239
+MeshFilter:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 567301177437747236}
+  m_Mesh: {fileID: 4300000, guid: bf262a55f4524bf4d8bed1b047658642, type: 2}
+--- !u!64 &3342882062830099416
+MeshCollider:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -1172,16 +1183,9 @@ BoxCollider:
   m_Material: {fileID: 0}
   m_IsTrigger: 0
   m_Enabled: 1
-  serializedVersion: 2
-  m_Size: {x: 1.1999999, y: 2.8, z: 0.99999964}
-  m_Center: {x: 0.11100012, y: 1.4, z: 0.09500009}
---- !u!33 &567301177437747239
-MeshFilter:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 567301177437747236}
+  serializedVersion: 4
+  m_Convex: 1
+  m_CookingOptions: 30
   m_Mesh: {fileID: 4300000, guid: bf262a55f4524bf4d8bed1b047658642, type: 2}
 --- !u!23 &567301177437747238
 MeshRenderer:

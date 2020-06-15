@@ -9,9 +9,9 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 83e0b0593ab68d84a8f9b5ca2b8c8020, type: 3}
+  m_Script: {fileID: 0}
   m_Name: destructible_rock_a1389
-  m_EditorClassIdentifier: 
+  m_EditorClassIdentifier: Assembly-CSharp::VoxelExport
   localPosition: {x: 0.6000004, y: 0.3, z: -0.6500006}
   color: {r: 0.3962264, g: 0.3962264, b: 0.3962264, a: 1}
   drawFaces: 010100000100
@@ -22,4 +22,4 @@ MonoBehaviour:
   checkedForFloatingThisFrame: 0
   gameObject: {fileID: 0}
   meshUV: {x: 0.5, y: 0}
-  faceTriangleStartIndexes: 388200003c8200004082000044820000488200004c820000
+  voxelIndex: 1389

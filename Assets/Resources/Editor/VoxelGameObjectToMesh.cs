@@ -255,9 +255,6 @@ public class VoxelGameObjectToDestructiblePrefab : EditorWindow
 
             newGameObjectBounds.Encapsulate(voxelBounds);
         }
-        BoxCollider newGameObjectBoxCollider = newGameObject.AddComponent<BoxCollider>();
-        newGameObjectBoxCollider.center = newGameObjectBounds.center;
-        newGameObjectBoxCollider.size = newGameObjectBounds.size;
 
         // MESH CREATION START 
         List<int> triangles = new List<int>();
@@ -270,7 +267,6 @@ public class VoxelGameObjectToDestructiblePrefab : EditorWindow
             VoxelExport voxelExport = voxelExports[voxelIndex];
 
             int triangleRootVerticeIndex = vertices.Count;
-            voxelExport.faceTriangleStartIndexes[(int)Voxel.Faces.FRONT] = triangleRootVerticeIndex;
             if (voxelExport.drawFaces[(int)Voxel.Faces.FRONT])
             {
                 triangles.Add(triangleRootVerticeIndex);
@@ -296,7 +292,6 @@ public class VoxelGameObjectToDestructiblePrefab : EditorWindow
             uvs.Add(voxelExport.meshUV);
 
             triangleRootVerticeIndex = vertices.Count;
-            voxelExport.faceTriangleStartIndexes[(int)Voxel.Faces.RIGHT] = triangleRootVerticeIndex;
             if (voxelExport.drawFaces[(int)Voxel.Faces.RIGHT])
             {
                 triangles.Add(triangleRootVerticeIndex);
@@ -323,7 +318,6 @@ public class VoxelGameObjectToDestructiblePrefab : EditorWindow
 
 
             triangleRootVerticeIndex = vertices.Count;
-            voxelExport.faceTriangleStartIndexes[(int)Voxel.Faces.TOP] = triangleRootVerticeIndex;
             if (voxelExport.drawFaces[(int)Voxel.Faces.TOP])
             {
                 triangles.Add(triangleRootVerticeIndex);
@@ -350,7 +344,6 @@ public class VoxelGameObjectToDestructiblePrefab : EditorWindow
 
 
             triangleRootVerticeIndex = vertices.Count;
-            voxelExport.faceTriangleStartIndexes[(int)Voxel.Faces.LEFT] = triangleRootVerticeIndex;
             if (voxelExport.drawFaces[(int)Voxel.Faces.LEFT])
             {
                 triangles.Add(triangleRootVerticeIndex);
@@ -377,7 +370,6 @@ public class VoxelGameObjectToDestructiblePrefab : EditorWindow
 
 
             triangleRootVerticeIndex = vertices.Count;
-            voxelExport.faceTriangleStartIndexes[(int)Voxel.Faces.BOTTOM] = triangleRootVerticeIndex;
             if (voxelExport.drawFaces[(int)Voxel.Faces.BOTTOM])
             {
                 triangles.Add(triangleRootVerticeIndex);
@@ -404,7 +396,6 @@ public class VoxelGameObjectToDestructiblePrefab : EditorWindow
 
 
             triangleRootVerticeIndex = vertices.Count;
-            voxelExport.faceTriangleStartIndexes[(int)Voxel.Faces.BACK] = triangleRootVerticeIndex;
             if (voxelExport.drawFaces[(int)Voxel.Faces.BACK])
             {
                 triangles.Add(triangleRootVerticeIndex);
@@ -439,6 +430,9 @@ public class VoxelGameObjectToDestructiblePrefab : EditorWindow
         MeshFilter newMeshFilter = newGameObject.AddComponent<MeshFilter>();
         newMeshFilter.mesh = mesh;
 
+        MeshCollider newGameObjectMeshCollider = newGameObject.AddComponent<MeshCollider>();
+        newGameObjectMeshCollider.convex = true;
+
         // Delete all generated voxel game objects
         for (int voxelIndex = 0; voxelIndex < voxelExports.Count; voxelIndex++)
         {
@@ -467,10 +461,10 @@ public class VoxelGameObjectToDestructiblePrefab : EditorWindow
         AssetDatabase.CreateFolder(assetsFolderPath + "/" + meshName, "Materials");
         AssetDatabase.CreateFolder(assetsFolderPath + "/" + meshName, "VoxelExports");
 
-        //for (int index = 0; index < voxelExports.Count; index++)
-        //{
-        //    AssetDatabase.CreateAsset(voxelExports[index], AssetDatabase.GenerateUniqueAssetPath(assetsFolderPath + "/" + meshName + "/VoxelExports/" + meshName + index + ".asset"));
-        //}
+        for (int index = 0; index < voxelExports.Count; index++)
+        {
+            AssetDatabase.CreateAsset(voxelExports[index], AssetDatabase.GenerateUniqueAssetPath(assetsFolderPath + "/" + meshName + "/VoxelExports/" + meshName + index + ".asset"));
+        }
 
         AssetDatabase.SaveAssets();
         AssetDatabase.Refresh();
