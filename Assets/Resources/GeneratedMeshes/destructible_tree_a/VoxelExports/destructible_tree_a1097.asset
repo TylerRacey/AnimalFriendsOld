@@ -23,3 +23,4 @@ MonoBehaviour:
   gameObject: {fileID: 0}
   meshUV: {x: 0.3, y: 0}
   voxelIndex: 1097
+  localNormal: {x: 0.3610003, y: 0, z: 0.14500046}

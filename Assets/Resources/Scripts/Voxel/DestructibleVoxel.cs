@@ -26,11 +26,11 @@ public class DestructibleVoxel : MonoBehaviour
         thisDestructibleVoxel = this;
     }
 
-    public void SetActive(VoxelStruct parentVoxelStruct, Destructible parentDestructible)
+    public void SetActive(VoxelStruct parentVoxelStruct, Destructible parentDestructible, Transform parentTransform)
     {
-        Transform parentTransform = parentDestructible.transform;
-        voxelTransform.position = parentTransform.TransformPoint(parentVoxelStruct.localPosition);
-        voxelTransform.rotation = parentTransform.rotation;
+        voxelTransform.SetParent(parentTransform, false);
+        voxelTransform.localPosition = parentVoxelStruct.localPosition;
+
         if (voxelStruct != null)
         {
             voxelStruct.destructibleVoxel = null;
@@ -44,7 +44,7 @@ public class DestructibleVoxel : MonoBehaviour
 
     public void SetInactive()
     {
-        voxelTransform.position = destructibleVoxelsParentTransform.position;
+        voxelTransform.SetParent(destructibleVoxelsParentTransform, false);
 
         if (voxelStruct != null)
         {

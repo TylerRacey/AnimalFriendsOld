@@ -7,6 +7,7 @@ public class SeperatedVoxel : MonoBehaviour
 
     public Rigidbody rigidBody;
     private Material material;
+    public BoxCollider boxCollider;
 
     public const float pickSpeedMinSquared = 0.10f * 0.10f;
 
@@ -41,7 +42,7 @@ public class SeperatedVoxel : MonoBehaviour
 
         material = gameObject.GetComponent<MeshRenderer>().material;
 
-        Utility.VoxelCreateBoxCollider(gameObject);
+        boxCollider = Utility.VoxelCreateBoxCollider(gameObject);
 
         triggeredMovementDuration = Random.Range(0.30f, 0.55f);
         hasHadEnoughVelocityTimeoutDelay = Random.Range(0.10f, 0.20f);

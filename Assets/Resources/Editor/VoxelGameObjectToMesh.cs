@@ -65,6 +65,7 @@ public class VoxelGameObjectToDestructiblePrefab : EditorWindow
         Destructible destructible = newGameObject.AddComponent<Destructible>();
 
         Transform[] allChildren = selectedGameObject.GetComponentsInChildren<Transform>();
+        LineRenderer centerLine = selectedGameObject.transform.Find("CenterLine").GetComponent<LineRenderer>();
         List<GameObject> voxels = new List<GameObject>();
         List<VoxelExport> voxelExports = new List<VoxelExport>();
         List<VoxelExport> exposedVoxelExports = new List<VoxelExport>();
@@ -138,7 +139,10 @@ public class VoxelGameObjectToDestructiblePrefab : EditorWindow
             Material voxelMaterial = voxel.GetComponent<MeshRenderer>().sharedMaterial;
             Color voxelColor = voxel.GetComponent<MeshRenderer>().sharedMaterial.color;
             Vector2 voxelMeshUVs = new Vector2((voxelColors.IndexOf(voxelColor) / (float)voxelColors.Count) + (0.5f / voxelColors.Count), 0);
-            VoxelExport voxelExport = VoxelExport.CreateInstance(voxel.transform.localPosition, voxelColor, drawFaces, null, false, isAnchor, isExposed, false, null, voxelMeshUVs, voxels.IndexOf(voxel));
+            Vector3 voxelCenterLocal = selectedGameObject.transform.InverseTransformPoint(voxelCenter);
+            Vector3 localNormal = voxelCenterLocal - ClosestPointOnLine(centerLine.GetPosition(0), centerLine.GetPosition(1), voxelCenterLocal);
+
+            VoxelExport voxelExport = VoxelExport.CreateInstance(voxel.transform.localPosition, voxelColor, drawFaces, null, false, isAnchor, isExposed, false, null, voxelMeshUVs, voxels.IndexOf(voxel), localNormal);
 
             // Create Temp GameObject Voxel
             GameObject generatedVoxel = GenerateVoxelGameObjectFromVoxelExport(voxelExport, selectedGameObject.transform);
@@ -507,5 +511,26 @@ public class VoxelGameObjectToDestructiblePrefab : EditorWindow
         voxel.transform.localPosition = voxelExport.localPosition;
 
         return voxel;
+    }
+
+    private Vector3 ClosestPointOnLine(Vector3 vA, Vector3 vB, Vector3 vPoint)
+    {
+        var vVector1 = vPoint - vA;
+        var vVector2 = (vB - vA).normalized;
+
+        var d = Vector3.Distance(vA, vB);
+        var t = Vector3.Dot(vVector2, vVector1);
+
+        if (t <= 0)
+            return vA;
+
+        if (t >= d)
+            return vB;
+
+        var vVector3 = vVector2 * t;
+
+        var vClosestPoint = vA + vVector3;
+
+        return vClosestPoint;
     }
 }

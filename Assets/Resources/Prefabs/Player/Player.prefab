@@ -74,6 +74,50 @@ Camera:
   m_OcclusionCulling: 1
   m_StereoConvergence: 10
   m_StereoSeparation: 0.022
+--- !u!1 &324504173
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 324504174}
+  - component: {fileID: 324504175}
+  m_Layer: 0
+  m_Name: CameraCollider
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &324504174
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 324504173}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0.3}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 4689316579494043367}
+  m_RootOrder: 2
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!65 &324504175
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 324504173}
+  m_Material: {fileID: 0}
+  m_IsTrigger: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Size: {x: 0.7, y: 0.7, z: 0.25}
+  m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &485986633
 GameObject:
   m_ObjectHideFlags: 0
@@ -220,6 +264,7 @@ Transform:
   m_Children:
   - {fileID: 485986634}
   - {fileID: 105923233}
+  - {fileID: 324504174}
   m_Father: {fileID: 4689316580551165481}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -254,7 +299,7 @@ Camera:
   m_Depth: -1
   m_CullingMask:
     serializedVersion: 2
-    m_Bits: 13879
+    m_Bits: 30263
   m_RenderingPath: -1
   m_TargetTexture: {fileID: 0}
   m_TargetDisplay: 0
@@ -429,11 +474,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 866803890ae5fee42a9c9ab87f9be74f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  player: {fileID: 4689316580859470567}
-  playerEye: {fileID: 4689316580551165481}
-  mainCamera: {fileID: 4689316579494043367}
-  inverted: 0
-  mouseSensitivity: 5
 --- !u!114 &3274974082096379710
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -65,7 +65,7 @@ public class PlayerViewmodel : MonoBehaviour
             RaycastHit hit;
             if (Physics.Raycast(game.playerEye.position, game.playerEye.forward, out hit, axeSwingTrunkDistance, LayerMask.GetMask("Destructible")))
             {
-                hit.collider.gameObject.GetComponent<Destructible>().AssignDestructibleVoxels(hit.point);
+                hit.collider.gameObject.GetComponent<Destructible>().AssignDestructibleVoxels();
             }
 
             swinging = true;
@@ -110,7 +110,11 @@ public class PlayerViewmodel : MonoBehaviour
         RaycastHit[] hits = Physics.RaycastAll(game.playerEye.position, game.playerEye.forward, axeSwingTrunkDistance, LayerMask.GetMask("Destructible"));
         for (int hitIndex = 0; hitIndex < hits.Length; hitIndex++)
         {
-            hits[hitIndex].collider.gameObject.GetComponent<Destructible>().TakeDamage(hits[hitIndex].point, axeSwingDamageRadius);
+            GameObject hitGameObject = hits[hitIndex].collider.gameObject;
+            if (hitGameObject == null)
+                continue;
+
+            hitGameObject.GetComponent<Destructible>().TakeDamage(hits[hitIndex].point, axeSwingDamageRadius, game.playerEye.forward);
         }
 
         swingDisabled = false;

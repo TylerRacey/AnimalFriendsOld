@@ -465,9 +465,6 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 335b8c8e1ecfc8941b7d6bd2dde5c9bd, type: 2}
   - {fileID: 11400000, guid: f3a117070bc576646be0d0d50d5ed9c4, type: 2}
   - {fileID: 11400000, guid: 5ab3385d876290a468c5844b20cfbb45, type: 2}
-  remainingVoxelStructCount: 0
-  floatingVoxelStructCount: 0
-  minVoxelCount: 0
 --- !u!33 &1692102389661924925
 MeshFilter:
   m_ObjectHideFlags: 0
