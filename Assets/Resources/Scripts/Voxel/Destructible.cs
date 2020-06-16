@@ -39,10 +39,11 @@ public class Destructible : MonoBehaviour
     private const float floatingDestructibleStartVelocityMagnitude = 1.0f;
     private const float floatingDestructibleStartLaunchMagnitude = 30.0f;
     private const float floatingTakeDamageAddForceMagnitude = 20000.0f;
-    private const float floatingFallDamageMinVelocitySquared = 1.0f * 1.0f;
+    private const float floatingFallDamageMinVelocitySquared = 0.7f * 0.7f;
+    private const float floatingFallDamageMinAngularVelocitySquared = 0.7f * 0.7f;
 
     private float nextFallDamageTime;
-    private const float fallDamageFrequencyMin = 1.0f;
+    private const float fallDamageFrequencyMin = 0.5f;
     private const float fallDamageRadius = 0.5f;
     private bool wasFloating;
 

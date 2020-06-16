@@ -89,6 +89,7 @@ public class SeperatedVoxel : MonoBehaviour
         material.color = voxelStruct.color;
 
         rigidBody = gameObject.AddComponent<Rigidbody>();
+        rigidBody.mass = Voxel.MASS;
 
         hasHadEnoughVelocityTimeout = Time.time + hasHadEnoughVelocityTimeoutDelay;
     }

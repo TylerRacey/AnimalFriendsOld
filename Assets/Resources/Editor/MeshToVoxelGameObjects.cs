@@ -23,7 +23,7 @@ public class MeshToVoxelGameObjects : EditorWindow
     {
         meshName = EditorGUILayout.TextField("Mesh Name: ", meshName);
 
-        if (GUILayout.Button("Create Mesh"))
+        if (GUILayout.Button("Create Game Objects"))
         {
             GameObject[] selection = Selection.gameObjects;
 
