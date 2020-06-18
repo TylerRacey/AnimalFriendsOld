@@ -26,7 +26,7 @@ public class Item : MonoBehaviour
     private const float rotateSpeed = 45.0f;
 
     // Start is called before the first frame update
-    void Start()
+    void Awake()
     {
         player = GameObject.FindWithTag("Player");
 

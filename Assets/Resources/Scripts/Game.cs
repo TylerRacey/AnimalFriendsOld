@@ -42,7 +42,7 @@ public class Game : MonoBehaviour
     private Mesh seperatedVoxelMesh;
     private const int destructibleVoxelMaxCount = 1000;
 
-    public void Awake()
+    private void Awake()
     {
         player = GameObject.FindWithTag("Player");
         playerEye = player.transform.Find("Eye");
@@ -54,7 +54,7 @@ public class Game : MonoBehaviour
         characterController = player.GetComponent<CharacterController>();
         playerMovement = player.GetComponent<PlayerMovement>();
 
-        seperatedVoxelMesh = Resources.Load("GeneratedMeshes/voxel/Meshes/voxel", typeof(Mesh)) as Mesh;
+        seperatedVoxelMesh = Resources.Load(Voxel.defaultMeshPath, typeof(Mesh)) as Mesh;
         seperatedVoxelsParentTransform = GameObject.Find("SeperatedVoxelsParent").transform;
         for (int index = 0; index < seperatedVoxelMaxCount; index++)
         {

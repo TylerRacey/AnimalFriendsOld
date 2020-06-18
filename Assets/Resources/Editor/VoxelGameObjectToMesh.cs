@@ -3,6 +3,7 @@ using UnityEditor;
 using System.Collections.Generic;
 using System;
 using System.IO;
+using System.Runtime.Serialization.Formatters.Binary;
 
 public class VoxelGameObjectToDestructiblePrefab : EditorWindow
 {
@@ -10,7 +11,6 @@ public class VoxelGameObjectToDestructiblePrefab : EditorWindow
     const string assetsFolderPath = "Assets/Resources/GeneratedMeshes";
 
     string meshName = "Default";
-    bool makeHollow = false;
 
     [MenuItem("Tools/Voxel Game Objects To Destructible Prefab")]
     static void CreateVoxelGameObjectToDestructiblePrefab()
@@ -21,8 +21,6 @@ public class VoxelGameObjectToDestructiblePrefab : EditorWindow
     private void OnGUI()
     {
         meshName = EditorGUILayout.TextField("Mesh Name: ", meshName);
-
-        makeHollow = EditorGUILayout.Toggle("Hollow: ", makeHollow);
 
         if (GUILayout.Button("Create Mesh"))
         {
@@ -132,9 +130,6 @@ public class VoxelGameObjectToDestructiblePrefab : EditorWindow
                 }
             }
 
-            if (makeHollow && !isExposed)
-                continue;
-
             // Create Voxel Export
             Material voxelMaterial = voxel.GetComponent<MeshRenderer>().sharedMaterial;
             Color voxelColor = voxel.GetComponent<MeshRenderer>().sharedMaterial.color;
@@ -142,13 +137,11 @@ public class VoxelGameObjectToDestructiblePrefab : EditorWindow
             Vector3 voxelCenterLocal = selectedGameObject.transform.InverseTransformPoint(voxelCenter);
             Vector3 localNormal = voxelCenterLocal - ClosestPointOnLine(centerLine.GetPosition(0), centerLine.GetPosition(1), voxelCenterLocal);
 
-            VoxelExport voxelExport = VoxelExport.CreateInstance(voxel.transform.localPosition, voxelColor, drawFaces, null, false, isAnchor, isExposed, false, null, voxelMeshUVs, voxels.IndexOf(voxel), localNormal);
+            VoxelExport voxelExport = new VoxelExport(voxel.transform.localPosition.x, voxel.transform.localPosition.y, voxel.transform.localPosition.z, voxelColor.r, voxelColor.g, voxelColor.b, drawFaces, isAnchor, isExposed, voxelMeshUVs.x, voxelMeshUVs.y, localNormal.x, localNormal.y, localNormal.z);
+            voxelExports.Add(voxelExport);
 
             // Create Temp GameObject Voxel
             GameObject generatedVoxel = GenerateVoxelGameObjectFromVoxelExport(voxelExport, selectedGameObject.transform);
-
-            voxelExport.gameObject = generatedVoxel;
-            voxelExports.Add(voxelExport);
 
             if (isExposed)
             {
@@ -162,37 +155,6 @@ public class VoxelGameObjectToDestructiblePrefab : EditorWindow
 
             generatedVoxel.transform.SetParent(newGameObject.transform, true);
             generatedVoxels.Add(generatedVoxel);
-        }
-
-        // If Hollow, Reset Draw Faces To Only Use Exposed Voxels
-        if (makeHollow)
-        {
-            for (int voxelIndex = 0; voxelIndex < voxels.Count; voxelIndex++)
-            {
-                GameObject voxel = voxels[voxelIndex];
-                BoxCollider boxCollider = voxel.GetComponent<BoxCollider>();
-                Vector3 voxelCenter = boxCollider.bounds.center;
-
-                Vector3[] faceDirectionChecks = new Vector3[] { -voxel.transform.forward, voxel.transform.right, voxel.transform.up, -voxel.transform.right, -voxel.transform.up, voxel.transform.forward };
-
-                // Add Inner Face Of Exposed Voxels To Draw
-                for (int directionIndex = 0; directionIndex < (int)Voxel.Faces.SIZE; directionIndex++)
-                {
-                    RaycastHit raycastHit;
-                    if (Physics.Raycast(voxelCenter, faceDirectionChecks[directionIndex], out raycastHit, Voxel.SIZE))
-                    {
-                        GameObject hitObject = raycastHit.collider.gameObject;
-
-                        if (!voxels.Contains(hitObject))
-                            continue;
-
-                        if (voxelExports[voxels.IndexOf(hitObject)] != null)
-                            continue;
-
-                        voxelExports[voxelIndex].drawFaces[directionIndex] = true;
-                    }
-                } 
-            }
         }
 
         // Remove Box Colliders to Original Voxels
@@ -212,7 +174,7 @@ public class VoxelGameObjectToDestructiblePrefab : EditorWindow
         for (int voxelIndex = 0; voxelIndex < voxelExports.Count; voxelIndex++)
         {
             VoxelExport voxelExport = voxelExports[voxelIndex];
-            GameObject generatedVoxel = voxelExport.gameObject;
+            GameObject generatedVoxel = generatedVoxels[voxelIndex];
 
             Vector3[] faceDirectionChecks = Utility.GetVoxelFaceDirections(generatedVoxel);
             for (int directionIndex = 0; directionIndex < (int)Voxel.Faces.SIZE; directionIndex++)
@@ -225,22 +187,7 @@ public class VoxelGameObjectToDestructiblePrefab : EditorWindow
                     if (!generatedVoxels.Contains(hitObject))
                         continue;
 
-                    if (voxelExport.adjacentVoxelExportIndexes == null)
-                    {
-                        voxelExport.adjacentVoxelExportIndexes = new int[(int)Voxel.Faces.SIZE];
-                        for (int index = 0; index < voxelExport.adjacentVoxelExportIndexes.Length; index++)
-                        {
-                            voxelExport.adjacentVoxelExportIndexes[index] = -1;
-                        }
-                    }
-
-                    foreach (VoxelExport checkedVoxelExport in voxelExports)
-                    {
-                        if (checkedVoxelExport.gameObject != hitObject)
-                            continue;
-
-                        voxelExport.adjacentVoxelExportIndexes[directionIndex] = voxelExports.IndexOf(checkedVoxelExport);
-                    }
+                    voxelExport.adjacentVoxelExportIndexes[directionIndex] = generatedVoxels.IndexOf(hitObject);
                 }
             }
         }
@@ -269,6 +216,8 @@ public class VoxelGameObjectToDestructiblePrefab : EditorWindow
         for (int voxelIndex = 0; voxelIndex < voxelExports.Count; voxelIndex++)
         {
             VoxelExport voxelExport = voxelExports[voxelIndex];
+            Vector3 localPosition = new Vector3(voxelExport.localPositionX, voxelExport.localPositionY, voxelExport.localPositionZ);
+            Vector2 meshUV = new Vector2(voxelExport.meshU, voxelExport.meshV);
 
             int triangleRootVerticeIndex = vertices.Count;
             if (voxelExport.drawFaces[(int)Voxel.Faces.FRONT])
@@ -279,21 +228,22 @@ public class VoxelGameObjectToDestructiblePrefab : EditorWindow
                 triangles.Add(triangleRootVerticeIndex);
                 triangles.Add(triangleRootVerticeIndex + 2);
                 triangles.Add(triangleRootVerticeIndex + 3);
+
+                vertices.Add(localPosition);
+                vertices.Add(localPosition + (Vector3.up * Voxel.SIZE));
+                vertices.Add(localPosition + (Vector3.up * Voxel.SIZE) + (Vector3.right * Voxel.SIZE));
+                vertices.Add(localPosition + (Vector3.right * Voxel.SIZE));
+
+                normals.Add(-Vector3.forward);
+                normals.Add(-Vector3.forward);
+                normals.Add(-Vector3.forward);
+                normals.Add(-Vector3.forward);
+
+                uvs.Add(meshUV);
+                uvs.Add(meshUV);
+                uvs.Add(meshUV);
+                uvs.Add(meshUV);
             }
-            vertices.Add(voxelExport.localPosition);
-            vertices.Add(voxelExport.localPosition + (Vector3.up * Voxel.SIZE));
-            vertices.Add(voxelExport.localPosition + (Vector3.up * Voxel.SIZE) + (Vector3.right * Voxel.SIZE));
-            vertices.Add(voxelExport.localPosition + (Vector3.right * Voxel.SIZE));
-
-            normals.Add(-Vector3.forward);
-            normals.Add(-Vector3.forward);
-            normals.Add(-Vector3.forward);
-            normals.Add(-Vector3.forward);
-
-            uvs.Add(voxelExport.meshUV);
-            uvs.Add(voxelExport.meshUV);
-            uvs.Add(voxelExport.meshUV);
-            uvs.Add(voxelExport.meshUV);
 
             triangleRootVerticeIndex = vertices.Count;
             if (voxelExport.drawFaces[(int)Voxel.Faces.RIGHT])
@@ -304,22 +254,22 @@ public class VoxelGameObjectToDestructiblePrefab : EditorWindow
                 triangles.Add(triangleRootVerticeIndex);
                 triangles.Add(triangleRootVerticeIndex + 2);
                 triangles.Add(triangleRootVerticeIndex + 3);
+
+                vertices.Add(localPosition + (Vector3.right * Voxel.SIZE));
+                vertices.Add(localPosition + (Vector3.right * Voxel.SIZE) + (Vector3.up * Voxel.SIZE));
+                vertices.Add(localPosition + (Vector3.right * Voxel.SIZE) + (Vector3.up * Voxel.SIZE) + (Vector3.forward * Voxel.SIZE));
+                vertices.Add(localPosition + (Vector3.right * Voxel.SIZE) + (Vector3.forward * Voxel.SIZE));
+
+                normals.Add(Vector3.right);
+                normals.Add(Vector3.right);
+                normals.Add(Vector3.right);
+                normals.Add(Vector3.right);
+
+                uvs.Add(meshUV);
+                uvs.Add(meshUV);
+                uvs.Add(meshUV);
+                uvs.Add(meshUV);
             }
-            vertices.Add(voxelExport.localPosition + (Vector3.right * Voxel.SIZE));
-            vertices.Add(voxelExport.localPosition + (Vector3.right * Voxel.SIZE) + (Vector3.up * Voxel.SIZE));
-            vertices.Add(voxelExport.localPosition + (Vector3.right * Voxel.SIZE) + (Vector3.up * Voxel.SIZE) + (Vector3.forward * Voxel.SIZE));
-            vertices.Add(voxelExport.localPosition + (Vector3.right * Voxel.SIZE) + (Vector3.forward * Voxel.SIZE));
-
-            normals.Add(Vector3.right);
-            normals.Add(Vector3.right);
-            normals.Add(Vector3.right);
-            normals.Add(Vector3.right);
-
-            uvs.Add(voxelExport.meshUV);
-            uvs.Add(voxelExport.meshUV);
-            uvs.Add(voxelExport.meshUV);
-            uvs.Add(voxelExport.meshUV);
-
 
             triangleRootVerticeIndex = vertices.Count;
             if (voxelExport.drawFaces[(int)Voxel.Faces.TOP])
@@ -330,22 +280,22 @@ public class VoxelGameObjectToDestructiblePrefab : EditorWindow
                 triangles.Add(triangleRootVerticeIndex);
                 triangles.Add(triangleRootVerticeIndex + 2);
                 triangles.Add(triangleRootVerticeIndex + 3);
+
+                vertices.Add(localPosition + (Vector3.up * Voxel.SIZE));
+                vertices.Add(localPosition + (Vector3.up * Voxel.SIZE) + (Vector3.forward * Voxel.SIZE));
+                vertices.Add(localPosition + (Vector3.up * Voxel.SIZE) + (Vector3.forward * Voxel.SIZE) + (Vector3.right * Voxel.SIZE));
+                vertices.Add(localPosition + (Vector3.up * Voxel.SIZE) + (Vector3.right * Voxel.SIZE));
+
+                normals.Add(Vector3.up);
+                normals.Add(Vector3.up);
+                normals.Add(Vector3.up);
+                normals.Add(Vector3.up);
+
+                uvs.Add(meshUV);
+                uvs.Add(meshUV);
+                uvs.Add(meshUV);
+                uvs.Add(meshUV);
             }
-            vertices.Add(voxelExport.localPosition + (Vector3.up * Voxel.SIZE));
-            vertices.Add(voxelExport.localPosition + (Vector3.up * Voxel.SIZE) + (Vector3.forward * Voxel.SIZE));
-            vertices.Add(voxelExport.localPosition + (Vector3.up * Voxel.SIZE) + (Vector3.forward * Voxel.SIZE) + (Vector3.right * Voxel.SIZE));
-            vertices.Add(voxelExport.localPosition + (Vector3.up * Voxel.SIZE) + (Vector3.right * Voxel.SIZE));
-
-            normals.Add(Vector3.up);
-            normals.Add(Vector3.up);
-            normals.Add(Vector3.up);
-            normals.Add(Vector3.up);
-
-            uvs.Add(voxelExport.meshUV);
-            uvs.Add(voxelExport.meshUV);
-            uvs.Add(voxelExport.meshUV);
-            uvs.Add(voxelExport.meshUV);
-
 
             triangleRootVerticeIndex = vertices.Count;
             if (voxelExport.drawFaces[(int)Voxel.Faces.LEFT])
@@ -356,22 +306,22 @@ public class VoxelGameObjectToDestructiblePrefab : EditorWindow
                 triangles.Add(triangleRootVerticeIndex);
                 triangles.Add(triangleRootVerticeIndex + 3);
                 triangles.Add(triangleRootVerticeIndex + 2);
+
+                vertices.Add(localPosition);
+                vertices.Add(localPosition + (Vector3.up * Voxel.SIZE));
+                vertices.Add(localPosition + (Vector3.up * Voxel.SIZE) + (Vector3.forward * Voxel.SIZE));
+                vertices.Add(localPosition + (Vector3.forward * Voxel.SIZE));
+
+                normals.Add(-Vector3.right);
+                normals.Add(-Vector3.right);
+                normals.Add(-Vector3.right);
+                normals.Add(-Vector3.right);
+
+                uvs.Add(meshUV);
+                uvs.Add(meshUV);
+                uvs.Add(meshUV);
+                uvs.Add(meshUV);
             }
-            vertices.Add(voxelExport.localPosition);
-            vertices.Add(voxelExport.localPosition + (Vector3.up * Voxel.SIZE));
-            vertices.Add(voxelExport.localPosition + (Vector3.up * Voxel.SIZE) + (Vector3.forward * Voxel.SIZE));
-            vertices.Add(voxelExport.localPosition + (Vector3.forward * Voxel.SIZE));
-
-            normals.Add(-Vector3.right);
-            normals.Add(-Vector3.right);
-            normals.Add(-Vector3.right);
-            normals.Add(-Vector3.right);
-
-            uvs.Add(voxelExport.meshUV);
-            uvs.Add(voxelExport.meshUV);
-            uvs.Add(voxelExport.meshUV);
-            uvs.Add(voxelExport.meshUV);
-
 
             triangleRootVerticeIndex = vertices.Count;
             if (voxelExport.drawFaces[(int)Voxel.Faces.BOTTOM])
@@ -382,22 +332,22 @@ public class VoxelGameObjectToDestructiblePrefab : EditorWindow
                 triangles.Add(triangleRootVerticeIndex);
                 triangles.Add(triangleRootVerticeIndex + 3);
                 triangles.Add(triangleRootVerticeIndex + 2);
+
+                vertices.Add(localPosition);
+                vertices.Add(localPosition + (Vector3.forward * Voxel.SIZE));
+                vertices.Add(localPosition + (Vector3.forward * Voxel.SIZE) + (Vector3.right * Voxel.SIZE));
+                vertices.Add(localPosition + (Vector3.right * Voxel.SIZE));
+
+                normals.Add(-Vector3.up);
+                normals.Add(-Vector3.up);
+                normals.Add(-Vector3.up);
+                normals.Add(-Vector3.up);
+
+                uvs.Add(meshUV);
+                uvs.Add(meshUV);
+                uvs.Add(meshUV);
+                uvs.Add(meshUV);
             }
-            vertices.Add(voxelExport.localPosition);
-            vertices.Add(voxelExport.localPosition + (Vector3.forward * Voxel.SIZE));
-            vertices.Add(voxelExport.localPosition + (Vector3.forward * Voxel.SIZE) + (Vector3.right * Voxel.SIZE));
-            vertices.Add(voxelExport.localPosition + (Vector3.right * Voxel.SIZE));
-
-            normals.Add(-Vector3.up);
-            normals.Add(-Vector3.up);
-            normals.Add(-Vector3.up);
-            normals.Add(-Vector3.up);
-
-            uvs.Add(voxelExport.meshUV);
-            uvs.Add(voxelExport.meshUV);
-            uvs.Add(voxelExport.meshUV);
-            uvs.Add(voxelExport.meshUV);
-
 
             triangleRootVerticeIndex = vertices.Count;
             if (voxelExport.drawFaces[(int)Voxel.Faces.BACK])
@@ -408,21 +358,22 @@ public class VoxelGameObjectToDestructiblePrefab : EditorWindow
                 triangles.Add(triangleRootVerticeIndex);
                 triangles.Add(triangleRootVerticeIndex + 3);
                 triangles.Add(triangleRootVerticeIndex + 2);
+
+                vertices.Add(localPosition + (Vector3.forward * Voxel.SIZE));
+                vertices.Add(localPosition + (Vector3.forward * Voxel.SIZE) + (Vector3.up * Voxel.SIZE));
+                vertices.Add(localPosition + (Vector3.forward * Voxel.SIZE) + (Vector3.up * Voxel.SIZE) + (Vector3.right * Voxel.SIZE));
+                vertices.Add(localPosition + (Vector3.forward * Voxel.SIZE) + (Vector3.right * Voxel.SIZE));
+
+                normals.Add(Vector3.forward);
+                normals.Add(Vector3.forward);
+                normals.Add(Vector3.forward);
+                normals.Add(Vector3.forward);
+
+                uvs.Add(meshUV);
+                uvs.Add(meshUV);
+                uvs.Add(meshUV);
+                uvs.Add(meshUV);
             }
-            vertices.Add(voxelExport.localPosition + (Vector3.forward * Voxel.SIZE));
-            vertices.Add(voxelExport.localPosition + (Vector3.forward * Voxel.SIZE) + (Vector3.up * Voxel.SIZE));
-            vertices.Add(voxelExport.localPosition + (Vector3.forward * Voxel.SIZE) + (Vector3.up * Voxel.SIZE) + (Vector3.right * Voxel.SIZE));
-            vertices.Add(voxelExport.localPosition + (Vector3.forward * Voxel.SIZE) + (Vector3.right * Voxel.SIZE));
-
-            normals.Add(Vector3.forward);
-            normals.Add(Vector3.forward);
-            normals.Add(Vector3.forward);
-            normals.Add(Vector3.forward);
-
-            uvs.Add(voxelExport.meshUV);
-            uvs.Add(voxelExport.meshUV);
-            uvs.Add(voxelExport.meshUV);
-            uvs.Add(voxelExport.meshUV);
         }
 
         Mesh mesh = new Mesh();
@@ -438,9 +389,9 @@ public class VoxelGameObjectToDestructiblePrefab : EditorWindow
         newGameObjectMeshCollider.convex = true;
 
         // Delete all generated voxel game objects
-        for (int voxelIndex = 0; voxelIndex < voxelExports.Count; voxelIndex++)
+        for (int voxelIndex = 0; voxelIndex < generatedVoxels.Count; voxelIndex++)
         {
-            DestroyImmediate(voxelExports[voxelIndex].gameObject);
+            DestroyImmediate(generatedVoxels[voxelIndex]);
         }
 
         // Make Material Out of Voxel Colors
@@ -465,16 +416,16 @@ public class VoxelGameObjectToDestructiblePrefab : EditorWindow
         AssetDatabase.CreateFolder(assetsFolderPath + "/" + meshName, "Materials");
         AssetDatabase.CreateFolder(assetsFolderPath + "/" + meshName, "VoxelExports");
 
-        for (int index = 0; index < voxelExports.Count; index++)
-        {
-            AssetDatabase.CreateAsset(voxelExports[index], AssetDatabase.GenerateUniqueAssetPath(assetsFolderPath + "/" + meshName + "/VoxelExports/" + meshName + index + ".asset"));
-        }
+        BinaryFormatter binaryFormatter = new BinaryFormatter();
+        String voxelExportBinaryFilePath = assetsFolderPath + "/" + meshName + "/VoxelExports/" + meshName + ".binary";
+        FileStream voxelExportBinaryFile = File.Create(voxelExportBinaryFilePath);
+        binaryFormatter.Serialize(voxelExportBinaryFile, voxelExports);
+        destructible.binaryFilePath = Application.dataPath.Substring(0, Application.dataPath.Length - "Assets".Length) + voxelExportBinaryFilePath;
+        voxelExportBinaryFile.Close();
 
         AssetDatabase.SaveAssets();
         AssetDatabase.Refresh();
         EditorUtility.FocusProjectWindow();
-
-        destructible.voxelExports = voxelExports;
 
         string assetFolderPath = assetsFolderPath + "/" + meshName + "/";
         byte[] textureBytes = texture.EncodeToPNG();
@@ -508,7 +459,7 @@ public class VoxelGameObjectToDestructiblePrefab : EditorWindow
         GameObject voxel = new GameObject("DestructibleVoxel");
         voxel.layer = LayerMask.NameToLayer("DestructibleVoxel");
         voxel.transform.SetParent(parentTransform);
-        voxel.transform.localPosition = voxelExport.localPosition;
+        voxel.transform.localPosition = new Vector3(voxelExport.localPositionX, voxelExport.localPositionY, voxelExport.localPositionZ);
 
         return voxel;
     }

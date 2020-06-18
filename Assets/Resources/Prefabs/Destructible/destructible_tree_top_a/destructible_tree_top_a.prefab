@@ -1,6 +1,6 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!1 &3509921935491135954
+--- !u!1 &894894338242298511
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -8,45 +8,74 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 4507104727353310564}
-  - component: {fileID: 3804612964097747383}
-  - component: {fileID: 5615445147504936263}
-  m_Layer: 0
+  - component: {fileID: 3233907911512958408}
+  - component: {fileID: 6403625728553446018}
+  - component: {fileID: 4399733470152211531}
+  - component: {fileID: 7736015252868465137}
+  - component: {fileID: 7965935319020234121}
+  m_Layer: 9
   m_Name: destructible_tree_top_a
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!4 &4507104727353310564
+--- !u!4 &3233907911512958408
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3509921935491135954}
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 2.4568777, y: 0, z: -7.6093383}
+  m_GameObject: {fileID: 894894338242298511}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 7.592809, y: 1.36, z: -15.002384}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!33 &3804612964097747383
+--- !u!114 &6403625728553446018
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 894894338242298511}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c939e7ed828bb4149bb9ff1eaf03776f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  binaryFilePath: C:/Users/tracey/Documents/AnimalFriends/Assets/Resources/GeneratedMeshes/destructible_tree_top_a/VoxelExports/destructible_tree_top_a.binary
+--- !u!33 &4399733470152211531
 MeshFilter:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3509921935491135954}
-  m_Mesh: {fileID: -2432090755550338912, guid: a2b56798c33ad234e92e48e24b8d459f, type: 3}
---- !u!23 &5615445147504936263
+  m_GameObject: {fileID: 894894338242298511}
+  m_Mesh: {fileID: 4300000, guid: d02b4fb72e045294db697cc78321cd2d, type: 2}
+--- !u!64 &7736015252868465137
+MeshCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 894894338242298511}
+  m_Material: {fileID: 0}
+  m_IsTrigger: 0
+  m_Enabled: 1
+  serializedVersion: 4
+  m_Convex: 1
+  m_CookingOptions: 30
+  m_Mesh: {fileID: 4300000, guid: d02b4fb72e045294db697cc78321cd2d, type: 2}
+--- !u!23 &7965935319020234121
 MeshRenderer:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3509921935491135954}
+  m_GameObject: {fileID: 894894338242298511}
   m_Enabled: 1
   m_CastShadows: 1
   m_ReceiveShadows: 1
@@ -58,7 +87,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: c27d9840ed593ef4b90a3b98395d6ee9, type: 2}
+  - {fileID: 2100000, guid: b4c45d740279b764bb76b3f1b585e9e7, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0

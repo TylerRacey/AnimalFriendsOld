@@ -19,7 +19,7 @@ public class PlayerViewmodel : MonoBehaviour
     private const float axeSwingDamageRadius = 0.25f;
 
     // Start is called before the first frame update
-    void Start()
+    void Awake()
     {
         game = Game.GetGame();
 

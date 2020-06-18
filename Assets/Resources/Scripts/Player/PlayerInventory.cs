@@ -47,7 +47,7 @@ public class PlayerInventory : MonoBehaviour
     private const float pickupSeperatedVoxelDistance = 2.75f;
 
     // Start is called before the first frame update
-    void Start()
+    void Awake()
     {
         game = Game.GetGame();
 

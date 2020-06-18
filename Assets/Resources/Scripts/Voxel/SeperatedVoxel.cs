@@ -31,7 +31,7 @@ public class SeperatedVoxel : MonoBehaviour
     private Transform playerEyeTransform;
     private Transform playerTransform;
 
-    void Start()
+    void Awake()
     {
         game = Game.GetGame();
         playerEyeTransform = game.playerEye.transform;

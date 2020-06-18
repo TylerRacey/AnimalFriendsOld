@@ -54,7 +54,7 @@ public class PlayerMovement : MonoBehaviour
     private const float slideCompleteSpeed = 0.01f;
 
     // Start is called before the first frame update
-    void Start()
+    void Awake()
     {
         game = Game.GetGame();
 

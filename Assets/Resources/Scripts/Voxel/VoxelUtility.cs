@@ -1,4 +1,5 @@
 ﻿using System.CodeDom;
+using Unity.Collections.LowLevel.Unsafe;
 using UnityEngine;
 
 public static class Voxel
@@ -46,77 +47,82 @@ public static class Voxel
         -Vector3.right,
         -Vector3.up,
         Vector3.forward};
+
+    public const string defaultMeshPath = "GeneratedMeshes/voxel/Meshes/voxel";
 }
 
 public class VoxelStruct
 {
     public Vector3 localPosition;
     public bool[] drawFaces;
-    public bool isSeperated;
     public bool isAnchor;
     public bool isExposed;
     public bool checkedForFloatingThisFrame;
     public Vector2 meshUV;
     public Color color;
     public Destructible parentDestructible;
-    public int[] adjacentVoxelIndexes = new int[(int)Voxel.Faces.SIZE];
     public Vector3 localNormal;
 
     public DestructibleVoxel destructibleVoxel;
     public VoxelStruct[] adjacentVoxelStructs = new VoxelStruct[(int)Voxel.Faces.SIZE];
     public bool isFloating = false;
+    public bool isFalling = false;
+    public int listIndex;
+    public int exposedListIndex;
 
-    public VoxelStruct(Vector3 _localPosition, bool[] _drawFaces, bool _isSeperated, bool _isAnchor, bool _isExposed, bool _checkedForFloatingThisFrame, Vector2 _meshUV, Color _color, Destructible _parentDestructible, int[] _adjacentVoxelIndexes, Vector3 _localNormal)
+    public VoxelStruct(Vector3 _localPosition, bool[] _drawFaces, bool _isAnchor, bool _isExposed, bool _checkedForFloatingThisFrame, Vector2 _meshUV, Color _color, Destructible _parentDestructible, Vector3 _localNormal)
     {
         localPosition = _localPosition;
         drawFaces = Utility.CopyArray(_drawFaces);
-        isSeperated = _isSeperated;
         isAnchor = _isAnchor;
         isExposed = _isExposed;
         checkedForFloatingThisFrame = _checkedForFloatingThisFrame;
         meshUV = _meshUV;
         color = _color;
         parentDestructible = _parentDestructible;
-        adjacentVoxelIndexes = _adjacentVoxelIndexes;
         localNormal = _localNormal;
     }
 }
 
-public class VoxelExport : ScriptableObject
+[System.Serializable]
+public class VoxelExport
 {
-    public Vector3 localPosition;
-    public Color color;
+    public float localPositionX;
+    public float localPositionY;
+    public float localPositionZ;
+    public float colorR;
+    public float colorG;
+    public float colorB;
     public bool[] drawFaces;
-    public int[] adjacentVoxelExportIndexes;
-    public bool isSeperated;
+    public int[] adjacentVoxelExportIndexes = new int[(int)Voxel.Faces.SIZE];
     public bool isAnchor;
     public bool isExposed;
-    public bool checkedForFloatingThisFrame;
-    public GameObject gameObject;
-    public Vector2 meshUV;
-    public int voxelIndex;
-    public Vector3 localNormal;
+    public float meshU;
+    public float meshV;
+    public float localNormalX;
+    public float localNormalY;
+    public float localNormalZ;
 
-    public void Init(Vector3 _localPosition, Color _color, bool[] _drawFaces, int[] _adjacentVoxelExportIndexes, bool _isSeperated, bool _isAnchor, bool _isExposed, bool _checkedForFloatingThisFrame, GameObject _gameObject, Vector2 _meshUV, int _voxelIndex, Vector3 _localNormal)
+    public VoxelExport(float _localPositionX, float _localPositionY, float _localPositionZ, float _colorR, float _colorG, float _colorB, bool[] _drawFaces, bool _isAnchor, bool _isExposed, float _meshU, float _meshV, float _localNormalX, float _localNormalY, float _localNormalZ)
     {
-        localPosition = _localPosition;
-        color = _color;
+        localPositionX = _localPositionX;
+        localPositionY = _localPositionY;
+        localPositionZ = _localPositionZ;
+        colorR = _colorR;
+        colorG = _colorG;
+        colorB = _colorB;
         drawFaces = _drawFaces;
-        adjacentVoxelExportIndexes = _adjacentVoxelExportIndexes;
-        isSeperated = _isSeperated;
         isAnchor = _isAnchor;
         isExposed = _isExposed;
-        checkedForFloatingThisFrame = _checkedForFloatingThisFrame;
-        gameObject = _gameObject;
-        meshUV = _meshUV;
-        voxelIndex = _voxelIndex;
-        localNormal = _localNormal;
-    }
+        meshU = _meshU;
+        meshV = _meshV;
+        localNormalX = _localNormalX;
+        localNormalY = _localNormalY;
+        localNormalZ = _localNormalZ;
 
-    public static VoxelExport CreateInstance(Vector3 _localPosition, Color _color, bool[] _drawFaces, int[] _adjacentVoxelExportIndexes, bool _isSeperated, bool _isAnchor, bool _isExposed, bool _checkedForFloatingThisFrame, GameObject _gameObject, Vector2 _meshUV, int _voxelIndex, Vector3 _localNormal)
-    {
-        VoxelExport voxelExport = CreateInstance<VoxelExport>();
-        voxelExport.Init(_localPosition, _color, _drawFaces, _adjacentVoxelExportIndexes, _isSeperated, _isAnchor, _isExposed, _checkedForFloatingThisFrame, _gameObject, _meshUV, _voxelIndex, _localNormal);
-        return voxelExport;
+        for (int index = 0; index < adjacentVoxelExportIndexes.Length; index++)
+        {
+            adjacentVoxelExportIndexes[index] = -1;
+        }
     }
 }

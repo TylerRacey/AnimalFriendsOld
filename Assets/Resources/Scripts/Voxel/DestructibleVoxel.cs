@@ -14,7 +14,7 @@ public class DestructibleVoxel : MonoBehaviour
     private Transform destructibleVoxelsParentTransform;
     private Transform voxelTransform;
 
-    void Start()
+    void Awake()
     {
         game = Game.GetGame();
         voxelTransform = transform;

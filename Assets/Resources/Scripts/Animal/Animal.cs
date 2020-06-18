@@ -47,7 +47,7 @@ public class Animal : MonoBehaviour
     private bool movingTowardsGoal;
 
     // Start is called before the first frame update
-    void Start()
+    void Awake()
     {
         player = GameObject.FindWithTag("Player");
         playerInput = player.GetComponent<PlayerInput>();
